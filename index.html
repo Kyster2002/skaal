@@ -11,7 +11,7 @@
 <title>Skål!</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Figtree:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Figtree:wght@400;600;800&display=swap" media="print" onload="this.media='all'">
 <style>
 /* Layout: én kolonne, telefon-først. Topbar med kode + egne tår/sejre, bannere for hændelser/missioner, et stort kort pr. runde. */
 :root{
@@ -84,7 +84,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-
 .emojis button{aspect-ratio:1;min-width:0;padding:0;border-radius:12px;font-size:24px;background:var(--bg);border:2px solid transparent}
 .emojis button[aria-pressed="true"]{border-color:var(--amber);background:#4a2a1a}
 .photorow{display:flex;align-items:center;gap:10px}
-.photorow .btn{width:auto;flex:1;cursor:pointer}
+.photobtns{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.photobtns .btn{cursor:pointer}
 .avatar-lg{width:64px;height:64px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:38px;background:var(--bg);border:2px solid var(--amber);overflow:hidden}
 .avatar-lg img{width:100%;height:100%;object-fit:cover}
 img.av{width:1.15em;height:1.15em;border-radius:50%;object-fit:cover;vertical-align:-.22em;display:inline-block;background:var(--line)}
@@ -259,10 +260,31 @@ img.av{width:1.15em;height:1.15em;border-radius:50%;object-fit:cover;vertical-al
 <div id="app"></div>
 <div id="toast" class="toast" hidden></div>
 
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 "use strict";
+/* Hent biblioteker uden at blokere siden. Svarer et CDN ikke inden for 6 sek., prøves det næste. */
+function loadScript(urls){
+  return new Promise((resolve, reject) => {
+    let i = 0;
+    const next = () => {
+      if(i >= urls.length) return reject(new Error("kunne ikke hente"));
+      const s = document.createElement("script"); s.src = urls[i++]; s.async = true;
+      const to = setTimeout(() => { s.onload = s.onerror = null; next() }, 6000);
+      s.onload = () => { clearTimeout(to); resolve() };
+      s.onerror = () => { clearTimeout(to); s.remove(); next() };
+      document.head.appendChild(s);
+    };
+    next();
+  });
+}
+const peerReady = loadScript([
+  "https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js",
+  "https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"
+]).then(() => { warmUp(); return true }, () => false);
+loadScript([
+  "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js",
+  "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"
+]).then(() => drawQR(), () => {});
 /* ============================================================
    INDHOLD — [krydderi 1-3, ...]
    ============================================================ */
@@ -497,9 +519,10 @@ function newState(code){
 }
 
 function hostGame(resume){
+  dropWarm();
   teardown();
   role = "host"; clockOffset = 0;
-  ui = {...ui, screen:"connecting", err:"", menu:false};
+  ui = {...ui, screen:"connecting", err:"", menu:false, status:""};
   render();
   const code = resume ? resume.code : makeCode();
   let tries = 0;
@@ -747,7 +770,7 @@ function hostCmd(cmd, arg){
    Hver type: start (vært), act (vært), done, reveal (vært), view og result (alle)
    ============================================================ */
 const nameOf = id => { const p = player(id); return p ? esc(p.name) : "?" };
-const avatar = p => !p ? "" : okPhoto(p.photo) ? `<img class="av" src="${p.photo}" alt="">` : avatar(p);
+const avatar = p => !p ? "" : okPhoto(p.photo) ? `<img class="av" src="${p.photo}" alt="">` : esc(p.emoji);
 const emojiOf = id => avatar(player(id));
 const who = id => `${emojiOf(id)} ${nameOf(id)}`;
 const chili = l => l >= 2 ? `<span class="chili" aria-label="krydderi ${l}">${"🌶️".repeat(l)}</span>` : "";
@@ -939,6 +962,7 @@ const TYPES = {
     opt: v => typeof v === "string",
     reveal(r){
       const A = r.answers, drink = [];
+      if(!r.pick) return {drink};
       Object.keys(A).forEach(id => { if(A[id] !== "k" + r.pick.k) drink.push({id, s:S()}) });
       if(r.real){
         drink.push({id:r.opts[r.pick.k], s:S()*2});
@@ -965,6 +989,7 @@ const TYPES = {
     },
     result(r){
       const [M,F,K] = r.labels;
+      if(!r.pick) return card("red", "Marry, Fuck, Kill", `<h2 class="prompt sm">${nameOf(r.chooser)} nåede ikke at vælge.</h2>`);
       return card("red", "Marry, Fuck, Kill", `<div class="who">${who(r.chooser)} valgte:</div>
         <p style="font-size:19px">💍 <b>${M}:</b> ${TYPES.mfk.optName(r,r.pick.m)}<br>🔥 <b>${F}:</b> ${TYPES.mfk.optName(r,r.pick.f)}<br>🔪 <b>${K}:</b> ${TYPES.mfk.optName(r,r.pick.k)}</p>
         ${r.real ? `<p>${nameOf(r.chooser)} og ${nameOf(r.opts[r.pick.m])} er nu drukmakkere 🤝</p>` : ""}`);
@@ -1401,13 +1426,24 @@ const TYPES = {
 /* ============================================================
    GÆST
    ============================================================ */
+/* Gæstens forbindelse til signalserveren åbnes allerede på forsiden, så "Deltag" går hurtigt */
+let warmPeer = null;
+const newGuestPeer = () => new Peer(PREFIX + "g-" + Math.random().toString(36).slice(2,12), {debug:0});
+function warmUp(){
+  if(role || warmPeer || typeof Peer !== "function") return;
+  try{ warmPeer = newGuestPeer(); warmPeer.on("error", () => {}) }catch(e){ warmPeer = null }
+}
+function dropWarm(){ if(warmPeer) try{ warmPeer.destroy() }catch(e){} warmPeer = null }
+
 function joinGame(code){
+  const warm = warmPeer; warmPeer = null;
   teardown();
   role = "guest"; state = null; lastJson = ""; lastFlash = null;
-  ui = {...ui, screen:"connecting", err:"", code, menu:false};
+  ui = {...ui, screen:"connecting", err:"", code, menu:false, status:`Forbinder til spillet ${code}…`};
   render();
-  peer = new Peer({debug:0});
-  peer.on("open", () => connectHost());
+  if(warm && !warm.destroyed && !warm.disconnected) peer = warm;
+  else { if(warm) try{ warm.destroy() }catch(e){} peer = newGuestPeer() }
+  if(peer.open) setTimeout(connectHost); else peer.on("open", () => connectHost());
   peer.on("disconnected", () => setTimeout(() => { if(peer && !peer.destroyed) peer.reconnect() }, 1500));
   peer.on("error", e => {
     if(e.type === "peer-unavailable"){
@@ -1421,11 +1457,11 @@ function joinGame(code){
 }
 
 function connectHost(){
-  if(!peer || peer.destroyed || connecting) return;
+  if(!peer || peer.destroyed || connecting || (hostConn && hostConn.open)) return;
   if(peer.disconnected){ peer.reconnect(); scheduleReconnect(); return }
   connecting = true;
   const c = peer.connect(PREFIX + ui.code.toLowerCase(), {reliable:true});
-  const timeout = setTimeout(() => { if(!c.open){ connecting=false; try{c.close()}catch(e){} scheduleReconnect() } }, 9000);
+  const timeout = setTimeout(() => { if(!c.open){ connecting=false; try{c.close()}catch(e){} scheduleReconnect() } }, 6000);
   c.on("open", () => {
     clearTimeout(timeout); connecting = false;
     hostConn = c; everConnected = true; lastHostMsg = Date.now(); ui.online = true;
@@ -1452,7 +1488,8 @@ function connectHost(){
 }
 function scheduleReconnect(){
   if(role !== "guest" || guestTimer) return;
-  guestTimer = setTimeout(() => { guestTimer = null; if(role === "guest" && !(hostConn && hostConn.open)) connectHost() }, 2500);
+  if(!everConnected){ ui.status = `Prøver igen at finde spillet ${ui.code}…`; if(ui.screen === "connecting") render() }
+  guestTimer = setTimeout(() => { guestTimer = null; if(role === "guest" && !(hostConn && hostConn.open)) connectHost() }, 1200);
 }
 setInterval(() => {
   if(role !== "guest") return;
@@ -1631,10 +1668,14 @@ function renderHome(){
       <div class="label">Din figur</div>
       <div class="photorow">
         <span class="avatar-lg">${me.photo ? `<img src="${okPhoto(me.photo)}" alt="Dit profilbillede">` : esc(me.emoji)}</span>
-        <label class="btn small" for="photo">📷 ${me.photo ? "Skift billede" : "Brug eget billede"}</label>
-        ${me.photo ? `<button class="btn small ghost" data-a="nophoto" style="flex:0 0 auto">Fjern</button>` : ""}
+        <div class="photobtns">
+          <label class="btn small" for="photocam">📷 Tag billede</label>
+          <label class="btn small" for="photo">🖼️ Vælg billede</label>
+        </div>
+        <input type="file" id="photocam" accept="image/*" capture="user" hidden>
         <input type="file" id="photo" accept="image/*" hidden>
       </div>
+      ${me.photo ? `<button class="btn small ghost" data-a="nophoto">Fjern billede, brug emoji</button>` : ""}
       <div class="emojis">${EMOJIS.map(e=>`<button data-emoji="${e}" aria-pressed="${!me.photo && e===me.emoji}" aria-label="Vælg ${e}">${e}</button>`).join("")}</div>
     </section>
     <section class="panel">
@@ -1651,12 +1692,13 @@ function renderHome(){
     </section>
     <p class="foot">Kun for voksne. Drik med omtanke, og vand tæller også som en tår.</p>
   </div>`;
+  warmUp();
 }
 
 function renderConnecting(){
   app.innerHTML = `<div class="wrap"><header class="hero"><h1 class="logo">Skål!</h1></header>
     <section class="panel" style="text-align:center"><div class="drinkhead">${role==="host"?"Åbner spillet…":"Forbinder…"}</div>
-    <p class="hint">${role==="host"?"Henter en spilkode.":"Finder spillet "+esc(ui.code)+"."}</p>
+    <p class="hint">${esc(ui.status || (role==="host" ? "Henter en spilkode." : "Finder spillet " + ui.code + "."))}</p>
     <button class="btn small ghost" data-a="cancel">Annullér</button></section></div>`;
 }
 
@@ -1831,7 +1873,7 @@ function readHomeInputs(){
   store.set("skaal-emoji", me.emoji);
 }
 document.addEventListener("change", e => {
-  if(e.target.id === "photo" && e.target.files && e.target.files[0]){ readHomeInputs(); processPhoto(e.target.files[0]) }
+  if((e.target.id === "photo" || e.target.id === "photocam") && e.target.files && e.target.files[0]){ readHomeInputs(); processPhoto(e.target.files[0]) }
 });
 function parseJ(s){ try{ return JSON.parse(s) }catch(e){ return null } }
 document.addEventListener("pointerdown", e => {
@@ -1866,13 +1908,25 @@ document.addEventListener("click", e => {
   const a = b.dataset.a, v = b.dataset.v;
   if(a === "host" || a === "join" || a === "rejoin" || a === "resume"){
     readHomeInputs();
-    if(!me.name){ ui.err = "Skriv dit navn først."; ui.code = clean($("#code")?.value, 4).toUpperCase(); renderHome(); $("#name")?.focus(); return }
-    if(typeof Peer !== "function"){ ui.err = "Kunne ikke hente netværksmodulet. Tjek internetforbindelsen."; renderHome(); return }
-    if(a === "host"){ state = null; return hostGame() }
-    if(a === "resume"){ try{ const s = JSON.parse(store.get(SAVE_HOST)); state = s.state; return hostGame(s.state) }catch(err){ state = null; return hostGame() } }
-    const code = (a === "rejoin" ? store.get(SAVE_LAST) : clean($("#code")?.value, 4)).toUpperCase();
-    if(!/^[A-Z]{4}$/.test(code)){ ui.err = "Koden er 4 bogstaver."; renderHome(); return }
-    return joinGame(code);
+    if(!me.name){ ui.err = "Skriv dit navn først."; renderHome(); $("#name")?.focus(); return }
+    const isJoin = a === "join" || a === "rejoin";
+    const code = isJoin ? String(a === "rejoin" ? store.get(SAVE_LAST) : ui.code).toUpperCase() : "";
+    if(isJoin && !/^[A-Z]{4}$/.test(code)){ ui.err = "Koden er 4 bogstaver."; renderHome(); return }
+    const go = () => {
+      if(isJoin) return joinGame(code);
+      if(a === "resume"){ try{ const s = JSON.parse(store.get(SAVE_HOST)); state = s.state; return hostGame(s.state) }catch(err){} }
+      state = null; hostGame();
+    };
+    if(typeof Peer === "function") return go();
+    /* netværksdelen er ikke hentet endnu: vis ventende skærm og fortsæt, når den er klar */
+    role = isJoin ? "guest" : "host";
+    ui = {...ui, screen:"connecting", err:"", code, status:"Henter netværk…"}; render();
+    peerReady.then(ok => {
+      if(ui.screen !== "connecting") return;   // annulleret imens
+      if(ok) return go();
+      role = null; ui = {...ui, screen:"home", err:"Kunne ikke hente netværksdelen. Tjek internetforbindelsen, og prøv igen."}; render();
+    });
+    return;
   }
   if(a === "cancel"){ teardown(); role=null; state=null; ui={...ui, screen:"home"}; return render() }
   if(a === "menu"){ ui.menu = !ui.menu; return render() }
