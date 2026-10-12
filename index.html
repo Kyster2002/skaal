@@ -60,6 +60,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-
 .banner .txt{font-weight:800;font-size:17px;line-height:1.3}
 .banner.event{background:var(--amber);color:var(--ink)}
 .banner.mission{background:var(--bg2);border:2px dashed var(--amber)}
+.banner.trial{background:var(--red);color:#fff}
+.banner.trial .btn:not(.ink){background:#fff;color:var(--ink);border-color:#fff}
 .tbar{height:6px;border-radius:3px;background:rgba(0,0,0,.18);overflow:hidden}
 .banner.mission .tbar{background:var(--line)}
 .tbar i{display:block;height:100%;background:currentColor;transition:width .2s linear}
@@ -305,7 +307,7 @@ const DUELS = [
   [2,"Sexet catwalk på tværs af rummet. Bordet afgør."],
   [2,"Øjenkontakt på 10 cm afstand. Den første, der griner eller kigger væk, taber."],
   [2,"Twerk-duel i 15 sekunder. Bordet afgør."],
-  [2,"Hvisk noget flirtende i øret på værten. Værten vælger vinderen."],
+  [2,"Hvisk skiftevis noget flirtende i øret på den samme tilskuer. Bordet afgør."],
   [2,"Bedste lapdance for en tom stol i 20 sekunder. Bordet afgør."],
   [2,"Spis en banan så sexet som muligt. Bordet afgør."],
   [3,"Den mest overbevisende stønnelyd. Bordet afgør."],
@@ -319,16 +321,17 @@ const DARES = [
   [1,"Lav 15 armbøjninger. Bordet tæller."],
   [1,"Tal med fransk accent, til det bliver din tur igen."],
   [1,"Lad bordet give dig et kælenavn, som alle bruger resten af aftenen."],
-  [1,"Ring til en ven og sig 'jeg savner dig' uden at forklare hvorfor."],
+  [1,"Imitér en anden ved bordet. De andre skal gætte hvem."],
+  [1,"Tal i rim, til det bliver din tur igen."],
   [1,"Lav din bedste Michael Jackson-dans i 20 sekunder."],
   [2,"Giv personen til venstre en skuldermassage i 30 sekunder."],
-  [2,"Send 'tænker på dig 😏' til den sidste, du har skrevet med."],
-  [2,"Lad bordet læse din seneste chat højt i 10 sekunder."],
+  [2,"Giv personen til højre et kram, der varer 10 sekunder."],
+  [2,"Fortæl om din værste date på 30 sekunder."],
   [2,"Sid på skødet af en villig person efter eget valg til næste runde."],
   [2,"Lav en sexet dans i 20 sekunder."],
   [2,"Vis de seneste 5 billeder i din kamerarulle."],
   [2,"Hvisk en pickup-line i øret på en efter eget valg."],
-  [2,"Like et gammelt billede på din eks' Instagram."],
+  [2,"Lav din mest forførende dansebevægelse for personen overfor."],
   [3,"Kys en villig person efter eget valg på kinden. Eller halsen."],
   [3,"Tag ét stykke tøj af. Sko og sokker tæller ikke."],
   [3,"Giv en villig person en lapdance i 20 sekunder."],
@@ -380,6 +383,39 @@ const CHAOS = [
   {l:2,t:"Alle, der har kysset nogen i rummet, drikker {S}.",who:"none"},
   {l:3,t:"Alle, der har haft en one-night stand, drikker {S}.",who:"none"},
   {l:3,t:"Alle, der har sendt et frækt billede, drikker {S}.",who:"none"}
+];
+/* Vælg en makker: [krydderi, udfordring, mål, sekunder]. Samme udfordring kommer tidligst igen efter 10 runder. */
+const PARTNER = [
+  [1,"Find fem ting, I har til fælles. Rigtige fællestræk, ikke 'vi har begge ører'.",5,30],
+  [1,"Find fem ting, I er helt uenige om.",5,30],
+  [1,"Nævn på skift lande i Europa.",10,30],
+  [1,"Nævn på skift ølmærker.",8,30],
+  [1,"Nævn på skift danske byer.",12,30],
+  [1,"Nævn på skift Disney-film.",8,30],
+  [1,"Nævn på skift fodboldklubber.",10,30],
+  [1,"Nævn på skift tv-serier.",8,30],
+  [1,"Nævn på skift kendte danskere.",10,30],
+  [1,"Nævn på skift bilmærker.",10,30],
+  [1,"Nævn på skift slik og chokolade.",8,30],
+  [1,"Nævn på skift cocktails og drinks.",6,30],
+  [1,"Nævn på skift ting, man kan finde i et køleskab.",10,30],
+  [1,"Nævn på skift ord, der rimer på 'øl'.",6,30],
+  [1,"Nævn på skift engelske ord, der ender på -ing.",8,30],
+  [1,"Nævn på skift sange med 'love' eller 'kærlighed' i titlen.",5,40],
+  [1,"Nævn på skift dyr, der kan flyve.",8,30],
+  [1,"Nævn på skift ting, man siger til en fest klokken 3 om natten.",6,40],
+  [1,"Nævn på skift lande, I gerne vil på ferie i sammen.",6,30],
+  [1,"Gæt hinandens yndlingsmad, -film, -farve, -sang og -dyr. +1 for hvert rigtigt gæt.",5,45],
+  [1,"Fortæl på skift en sand ting om dig selv, som den anden ikke vidste.",6,45],
+  [1,"Find fem ting, du ved om din makker, som resten af bordet ikke ved. Sig dem højt.",5,45],
+  [1,"Find fem røde ting i rummet. I skal begge pege på dem.",5,30],
+  [1,"Lav ti high fives, der alle er forskellige.",10,30],
+  [1,"Lav ti squats sammen, mens I holder i hånden.",10,30],
+  [1,"Byg et tårn af ting fra bordet. +1 for hver ting, der står.",6,45],
+  [1,"Kast en ting frem og tilbage uden at tabe den. +1 for hvert greb.",10,30],
+  [1,"Stå ryg mod ryg, sæt jer på gulvet, og rejs jer uden at bruge hænderne. +1 hver gang det lykkes.",3,45],
+  [2,"Nævn på skift ting, der er sexede ved en person.",6,30],
+  [2,"Find fem ting, I begge synes er en turn-on.",5,30]
 ];
 /* Idé 2: opdigtede navne */
 const FAKE_NAMES = ["Bent","Gunnar","Brian","Jytte","Kaj","Birthe","Torben","Dorthe","Svend-Erik","Lone","Kurt","Hanne","Preben","Bodil","Ole","Grethe","Jørgen","Ib","Kenneth","Connie"];
@@ -441,7 +477,10 @@ const EMOJIS = ["🍺","🍷","🥂","🍹","🥃","🍾","🧉","🍸","🦄","
 const LEVELS = [{v:1,t:"Mild",s:"1 tår"},{v:2,t:"Medium",s:"2 tår"},{v:3,t:"Vild",s:"3 tår"}];
 const SPICES = [{v:1,t:"Hyggelig",s:"Ingen flirt"},{v:2,t:"Spicy",s:"🌶️🌶️"},{v:3,t:"Uartig",s:"🌶️🌶️🌶️"}];
 const PREFIX = "skaal-dk-v1-";
-const SAVE_HOST = "skaal-host3", SAVE_LAST = "skaal-last";
+const SAVE_HOST = "skaal-host4", SAVE_LAST = "skaal-last";
+const MISSION_MS = 5 * 60 * 1000;   // tid til en hemmelig mission
+const TRIAL_MS = 30 * 1000;         // tid til at stemme om snyd
+const ROUND_CHOICES = [20, 40, 60];
 
 /* ============================================================
    HJÆLPERE
@@ -513,8 +552,8 @@ const L = t => t + clockOffset;   // værtens tidsstempel -> lokal tid
    ============================================================ */
 function newState(code){
   const enabled = {}; Object.keys(TYPES).forEach(t => enabled[t] = true);
-  return {code, phase:"lobby", hostId:myId, intensity:2, spice:2, n:0, round:null, used:{}, count:{}, enabled,
-          buddy:null, missions:[], event:null, flash:null, fid:0,
+  return {code, phase:"lobby", hostId:myId, intensity:2, spice:2, maxRounds:40, n:0, round:null, used:{}, seen:{}, count:{}, enabled,
+          buddy:null, missions:[], event:null, trial:null, flash:null, fid:0,
           players:[{id:myId,name:me.name,emoji:me.emoji,photo:me.photo,sips:0,wins:0,online:true}]};
 }
 
@@ -626,6 +665,19 @@ function pickCard(key, arr){
   const i = pick(free);
   used.push(i); return arr[i];
 }
+/* Vælg et kort, der ikke har været vist de sidste `gap` runder */
+function pickFresh(key, arr, gap){
+  const seen = state.seen = state.seen || {};
+  const ok = arr.map((_,i) => i).filter(i => lvl(arr[i]) <= state.spice);
+  const last = i => seen[key + i] ?? -Infinity;
+  let free = ok.filter(i => state.n - last(i) >= gap);
+  if(!free.length) free = [ok.sort((a,b) => last(a) - last(b))[0]];   // nødløsning: den der er længst siden
+  const top = free.filter(i => lvl(arr[i]) === state.spice);
+  if(state.spice > 1 && top.length && Math.random() < 0.5) free = top;
+  const i = pick(free);
+  seen[key + i] = state.n;
+  return arr[i];
+}
 /* Vælg dem, der har haft rollen færrest gange */
 function pickLeast(key, pool, k){
   const c = state.count[key] = state.count[key] || {};
@@ -665,19 +717,24 @@ function withMate(list){
   return out;
 }
 
-function expireMissions(){
+/* Missioner og snyd-afstemninger udløber på tid; værten tjekker hvert sekund */
+function expireTimers(){
+  let changed = false;
   const keep = [];
   for(const m of state.missions){
-    if(state.n >= m.until){
-      const a = player(m.agent);
-      if(a){ giveNow(m.agent, S()*2, `Tiden er gået for ${gen(a.name)} hemmelige mission (kald ${player(m.target)?.name} for "${m.name}").`) }
+    if(Date.now() >= m.end){
+      const a = player(m.agent); changed = true;
+      if(a) giveNow(m.agent, S()*2, `Tiden er gået for ${gen(a.name)} hemmelige mission (kald ${player(m.target)?.name} for "${m.name}").`);
     } else keep.push(m);
   }
   state.missions = keep;
+  if(state.trial && Date.now() >= state.trial.end){ resolveTrial(); changed = true }
+  return changed;
 }
+setInterval(() => { if(role === "host" && state && expireTimers()) commit() }, 1000);
 
 function startRound(){
-  expireMissions();
+  if(state.n >= state.maxRounds){ state.phase = "end"; state.round = null; state.event = null; return commit() }
   if(state.event && Date.now() > state.event.end) state.event = null;
   const pool = online();
   const type = pickType(pool);
@@ -723,7 +780,17 @@ function applyReveal(r, res){
   commit();
 }
 
-/* Handlinger uden for runden: missioner og regelbrud */
+/* Snyd-afstemning: alle undtagen anklager og anklagede stemmer. Flertal for snyd = dømt. */
+const trialVoters = () => state.trial ? onlineIds().filter(id => id !== state.trial.accuser && id !== state.trial.accused) : [];
+function resolveTrial(){
+  const t = state.trial; if(!t) return;
+  state.trial = null;
+  const yes = Object.values(t.votes).filter(Boolean).length, no = Object.values(t.votes).length - yes;
+  if(yes > no) giveNow(t.accused, S()*2, `Dømt for snyd (${yes} mod ${no})!`);
+  else giveNow(t.accuser, S(), `Frifundet (${yes} mod ${no}). Falsk anklage:`);
+}
+
+/* Handlinger uden for runden: missioner, regelbrud og snyd */
 function hostSide(pid, v){
   if(v.k === "mission"){
     const m = state.missions.find(x => x.id === v.id && x.agent === pid); if(!m) return;
@@ -733,6 +800,20 @@ function hostSide(pid, v){
       if(a) a.wins = (a.wins||0) + 1;
       giveNow(m.target, S()*2, `Hemmelig mission klaret! ${a?.name} fik kaldt ${t?.name} for "${m.name}" uden at blive opdaget.`);
     } else giveNow(m.agent, S()*2, `${a?.name} blev afsløret i at kalde ${t?.name} for "${m.name}".`);
+    commit();
+  }
+  if(v.k === "accuse"){
+    const acc = player(v.id);
+    if(state.trial || !acc || v.id === pid || online().length < 3) return;
+    state.trial = {id:Date.now(), accuser:pid, accused:v.id, votes:{}, end:Date.now() + TRIAL_MS};
+    flash(`🚨 ${player(pid)?.name} anklager ${acc.name} for snyd! Stem nu.`);
+    commit();
+  }
+  if(v.k === "verdict"){
+    const t = state.trial;
+    if(!t || v.id !== t.id || pid === t.accuser || pid === t.accused) return;
+    t.votes[pid] = !!v.yes;
+    if(trialVoters().every(id => t.votes[id] !== undefined)) resolveTrial();
     commit();
   }
   if(v.k === "broke"){
@@ -758,8 +839,9 @@ function hostCmd(cmd, arg){
     if(state.enabled[arg] !== false && on.length <= 1) return toast("Mindst ét spil skal være slået til.");
     state.enabled[arg] = state.enabled[arg] === false; commit();
   }
-  if(cmd === "end"){ state.phase = "end"; state.round = null; state.event = null; commit() }
-  if(cmd === "again"){ state.players.forEach(p => { p.sips = 0; p.wins = 0 }); Object.assign(state, {phase:"lobby", round:null, n:0, count:{}, buddy:null, missions:[], event:null}); commit() }
+  if(cmd === "rounds" && ROUND_CHOICES.includes(+arg)){ state.maxRounds = +arg; commit() }
+  if(cmd === "end"){ state.phase = "end"; state.round = null; state.event = null; state.trial = null; commit() }
+  if(cmd === "again"){ state.players.forEach(p => { p.sips = 0; p.wins = 0 }); Object.assign(state, {phase:"lobby", round:null, n:0, count:{}, seen:{}, buddy:null, missions:[], event:null, trial:null}); commit() }
   if(cmd === "kick") removePlayer(arg);
   if(cmd === "hostact") hostAct(myId, state.round && state.round.n, arg);
   ui.menu = false; render();
@@ -860,14 +942,14 @@ const TYPES = {
       const free = pool.filter(p => !state.missions.some(m => m.agent === p.id));
       const agent = pickLeast("mission", free, 1)[0];
       const target = pick(others(pool, agent.id));
-      const m = {id:r.n, agent:agent.id, target:target.id, name:pick(FAKE_NAMES), until:state.n + 4};
+      const m = {id:r.n, agent:agent.id, target:target.id, name:pick(FAKE_NAMES), end:Date.now() + MISSION_MS, dur:MISSION_MS};
       state.missions.push(m);
-      Object.assign(r, {agent:m.agent, target:m.target, fake:m.name, until:m.until});
+      Object.assign(r, {agent:m.agent, target:m.target, fake:m.name});
       return {drink:[]};
     },
     result(r){
       if(r.agent === myId) return card("secret", "Hemmelig mission 🤫", `<h2 class="prompt sm">Kald ${who(r.target)} for "${esc(r.fake)}".</h2>
-        <p>Gør det naturligt i en samtale uden at blive afsløret. Du har til og med runde ${r.until}. Tryk på missionen øverst, når du har klaret den, eller hvis nogen opdager dig.</p>`);
+        <p>Gør det naturligt i en samtale uden at blive afsløret. Du har ${MISSION_MS/60000} minutter, og uret kører i banneret øverst. Tryk på missionen, når du har klaret den, eller hvis nogen opdager dig. Løber tiden ud, drikker du ${tar(S()*2)}.</p>`);
       return card("secret", "Hemmelig mission 🤫", `<h2 class="prompt sm">Psst… én af jer har lige fået en hemmelig mission.</h2><p>Hold ørerne åbne. Tænk over, hvad folk kalder hinanden.</p>`);
     }
   },
@@ -998,41 +1080,45 @@ const TYPES = {
 
   /* ---------- Idé 6: Find fem ting til fælles ---------- */
   common:{
-    name:"Fem ting til fælles", desc:"30 sek. med en makker", w:1, min:2,
-    start(r, pool){ r.chooser = pickLeast("common", pool, 1)[0].id; r.partner = null; r.found = 0; r.started = null },
+    name:"Vælg en makker", desc:"30 udfordringer for to", w:1.3, min:2,
+    start(r, pool){
+      r.chooser = pickLeast("common", pool, 1)[0].id; r.partner = null; r.found = 0; r.started = null;
+      const c = pickFresh("partner", PARTNER, 10);
+      Object.assign(r, {lvl:c[0], text:c[1], goal:c[2], secs:c[3]});
+    },
     act(r, pid, v){
       const inTeam = pid === r.chooser || pid === r.partner || pid === myId;
       if(isObj(v) && pid === r.chooser && !r.partner && player(v.partner) && v.partner !== pid){ r.partner = v.partner; return true }
       if(v === "start" && r.partner && inTeam && !r.started){
         r.started = Date.now(); const n = r.n;
-        setTimeout(() => { if(state.round && state.round.n === n && state.phase === "round") doReveal() }, 31000);
+        setTimeout(() => { if(state.round && state.round.n === n && state.phase === "round") doReveal() }, r.secs*1000 + 1000);
         return true;
       }
-      if(v === "plus" && r.started && inTeam){ r.found = Math.min(5, r.found + 1); return r.found >= 5 ? "reveal" : true }
+      if(v === "plus" && r.started && inTeam){ r.found = Math.min(r.goal, r.found + 1); return r.found >= r.goal ? "reveal" : true }
       return false;
     },
     reveal(r){
       if(!r.partner) return {drink:[{id:r.chooser, s:S()}]};
-      const miss = 5 - r.found;
-      return miss ? {drink:[{id:r.chooser, s:miss}, {id:r.partner, s:miss}]} : {win:[r.chooser, r.partner], drink:[]};
+      if(r.found >= r.goal) return {win:[r.chooser, r.partner], drink:[]};
+      const s = r.found * 2 >= r.goal ? S() : S()*2;   // under halvvejs = dobbelt straf
+      return {drink:[{id:r.chooser, s}, {id:r.partner, s}]};
     },
     view(r){
       const team = r.chooser === myId || r.partner === myId;
+      const rules = `<p>Nå I ${r.goal} på ${r.secs} sekunder, får I begge et 🏆. Ellers drikker I ${tar(S())} hver, eller ${tar(S()*2)} hvis I ikke nåede halvvejs.</p>`;
       if(!r.partner){
-        if(r.chooser === myId) return card("sky", "Fem ting til fælles", `<h2 class="prompt sm">Vælg en makker</h2><p>I får 30 sekunder til at finde fem ting, I har til fælles.</p>`) +
-          `<div class="voters">${online().filter(p => p.id !== myId).map(p => `<button class="choice" ${actj({partner:p.id})}><span class="em">${avatar(p)}</span>${esc(p.name)}</button>`).join("")}</div>`;
-        return card("sky", "Fem ting til fælles", `<h2 class="prompt sm">${who(r.chooser)} vælger en makker…</h2>`);
+        if(r.chooser === myId) return card("sky", "Vælg en makker", `<h2 class="prompt sm">${esc(r.text)}</h2>${rules}`, chili(r.lvl)) +
+          `<div class="label">Hvem tager du med?</div><div class="voters">${online().filter(p => p.id !== myId).map(p => `<button class="choice" ${actj({partner:p.id})}><span class="em">${avatar(p)}</span>${esc(p.name)}</button>`).join("")}</div>`;
+        return card("sky", "Vælg en makker", `<div class="who">${who(r.chooser)} vælger en makker…</div><h2 class="prompt sm">${esc(r.text)}</h2>`, chili(r.lvl));
       }
-      return card("sky", "Fem ting til fælles", `<div class="who">${who(r.chooser)} & ${who(r.partner)}</div>
-          <h2 class="prompt sm">Find fem ting, I har til fælles.</h2>
-          <p>Det skal være rigtige fællestræk, ikke "vi har begge to ører". Hver ting, I mangler, koster jer begge 1 tår.</p>`) +
-        `<div class="counter">${r.found}/5</div>` +
-        (r.started ? countdown(r.started, 30000) + (team || isHost() ? `<button class="btn primary" data-act="plus">+1 fælles ting</button>` : "")
-          : (team || isHost() ? `<button class="btn primary" data-act="start">Start 30 sekunder</button>` : `<p class="waiting">Venter på, at de starter…</p>`));
+      return card("sky", "Vælg en makker", `<div class="who">${who(r.chooser)} & ${who(r.partner)}</div><h2 class="prompt sm">${esc(r.text)}</h2>${rules}`, chili(r.lvl)) +
+        `<div class="counter">${r.found}/${r.goal}</div>` +
+        (r.started ? countdown(r.started, r.secs*1000) + (team || isHost() ? `<button class="btn primary" data-act="plus">+1</button>` : "")
+          : (team || isHost() ? `<button class="btn primary" data-act="start">Start ${r.secs} sekunder</button>` : `<p class="waiting">Venter på, at de starter…</p>`));
     },
-    result(r, res){
-      return card("sky", "Fem ting til fælles", `<div class="who">${who(r.chooser)} & ${r.partner ? who(r.partner) : "?"}</div>
-        <h2 class="prompt">${r.found >= 5 ? "Alle fem! Sjælevenner 🏆" : `${r.found} af 5`}</h2>`);
+    result(r){
+      return card("sky", "Vælg en makker", `<div class="who">${who(r.chooser)} & ${r.partner ? who(r.partner) : "?"}</div>
+        <p>${esc(r.text)}</p><h2 class="prompt">${r.found >= r.goal ? "Klaret! 🏆" : `${r.found} af ${r.goal}`}</h2>`, chili(r.lvl));
     }
   },
 
@@ -1117,6 +1203,7 @@ const TYPES = {
     start(r, pool){
       const c = pickCard("impostor", IMPOSTOR); r.cat = c[1]; r.crew = c[2]; r.fake = c[3]; r.lvl = c[0];
       r.impostor = pick(pool).id; r.players = pool.map(p => p.id);
+      r.starter = pick(pool).id;   // appen vælger, hvem der starter beskrivelserne
     },
     act(r, pid, v){ if(player(v) && v !== pid && r.players.includes(pid)){ r.answers[pid] = v; return true } return false },
     opt: () => true,
@@ -1132,7 +1219,8 @@ const TYPES = {
       const word = r.impostor === myId ? r.fake : r.crew;
       if(peek.n !== r.n) peek = {n:r.n, on:false};
       return card("violet", "Find impostoren", `<h2 class="prompt sm">Alle har fået et ord. Én af jer har et lidt andet ord.</h2>
-          <p>Beskriv på skift jeres ord uden at sige det. Stem så på, hvem I tror er impostoren. Bliver impostoren fanget, drikker de ${tar(S()*2)}. Ellers drikker alle andre ${tar(S())}.</p>`, chili(r.lvl)) +
+          <div class="who">🎤 ${r.starter === myId ? "Du starter!" : `${who(r.starter)} starter`}</div>
+          <p>Derefter går det med uret. Beskriv jeres ord uden at sige det, og stem så på, hvem I tror er impostoren. Bliver impostoren fanget, drikker de ${tar(S()*2)}. Ellers drikker alle andre ${tar(S())}.</p>`, chili(r.lvl)) +
         `<button class="peek" data-a="peek">${peek.on ? `<span><span class="label">Dit ord</span><br><span class="w">${esc(word)}</span></span>` : `<span class="hint">Tryk for at se dit ord<br>(skjul det for sidemanden)</span>`}</button>
         <div class="label">Hvem er impostoren?</div>` +
         voteButtons(r.players.filter(id => id !== myId && player(id)), r.answers[myId]) +
@@ -1153,7 +1241,11 @@ const TYPES = {
       r.order = shuffle(pool.map(p => p.id)); r.turn = 0; r.used = []; r.winner = null;
     },
     cur: r => r.order[r.turn],
-    next(r){ for(let i=1;i<=r.order.length;i++){ const j = (r.turn+i) % r.order.length; if(player(r.order[j])?.online){ r.turn = j; return } } },
+    /* Næste tur går til en tilfældig anden spiller, ikke på omgang */
+    next(r){
+      const cand = r.order.filter((id,i) => i !== r.turn && player(id)?.online);
+      if(cand.length) r.turn = r.order.indexOf(pick(cand));
+    },
     act(r, pid, v){
       const T = TYPES.letters;
       if(v === "skipturn" && pid === myId && !r.winner){ T.next(r); return true }
@@ -1297,26 +1389,26 @@ const TYPES = {
 
   /* ---------- Konkurrencer fra før ---------- */
   duel:{
-    name:"Duel", desc:"1 mod 1, de andre gætter", w:2, min:2,
+    name:"Duel", desc:"1 mod 1, tilskuerne dømmer", w:2, min:3,
     start(r, pool){
       const [a,b] = pickLeast("duel", pool, 2);
-      let c = pickCard("duel", DUELS);
-      for(let i=0; i<6 && (a.id === myId || b.id === myId) && /værten/.test(c[1]); i++) c = pickCard("duel", DUELS);  // værten kan ikke dømme sin egen duel
+      const c = pickCard("duel", DUELS);
       r.a = a.id; r.b = b.id; r.text = c[1]; r.lvl = c[0];
     },
+    /* Kun tilskuerne stemmer om vinderen, aldrig de to i duellen */
+    judges: r => onlineIds().filter(id => id !== r.a && id !== r.b),
     act(r, pid, v){
-      if(v === "lose" && (pid === r.a || pid === r.b)){ r.winner = pid === r.a ? "b" : "a"; return "reveal" }
-      if(v === "tie" && (pid === r.a || pid === r.b || pid === myId)){ r.winner = "tie"; return "reveal" }
-      if((v === "win:a" || v === "win:b") && pid === myId){ r.winner = v.slice(4); return "reveal" }
-      if((v === "a" || v === "b") && pid !== r.a && pid !== r.b){ r.answers[pid] = v; return true }
+      if(["a","b","tie"].includes(v) && pid !== r.a && pid !== r.b){ r.answers[pid] = v; return true }
       return false;
     },
-    opt: v => v === "a" || v === "b",
+    opt: v => ["a","b","tie"].includes(v),
+    done: r => { const j = TYPES.duel.judges(r); return j.length > 0 && j.every(id => r.answers[id]) },
     reveal(r){
-      const w = r.winner || "tie", A = r.answers;
-      const res = {winner:w, right:Object.keys(A).filter(id => w !== "tie" && A[id] === w), wrong:Object.keys(A).filter(id => w !== "tie" && A[id] !== w)};
+      const A = Object.values(r.answers), va = A.filter(x => x === "a").length, vb = A.filter(x => x === "b").length, vt = A.filter(x => x === "tie").length;
+      const w = va > vb && va >= vt ? "a" : vb > va && vb >= vt ? "b" : "tie";
+      const res = {winner:w, votes:{a:va, b:vb, tie:vt}};
       if(w === "tie") res.drink = [{id:r.a, s:S()}, {id:r.b, s:S()}];
-      else { res.drink = [{id: w === "a" ? r.b : r.a, s:S()*2}, ...res.wrong.map(id => ({id, s:S()}))]; res.win = [w === "a" ? r.a : r.b] }
+      else { res.drink = [{id: w === "a" ? r.b : r.a, s:S()*2}]; res.win = [w === "a" ? r.a : r.b] }
       return res;
     },
     vs(r, res){
@@ -1325,21 +1417,19 @@ const TYPES = {
         <div class="side ${cls("b")}"><div class="e">${emojiOf(r.b)}</div><div class="nm">${nameOf(r.b)}</div></div></div>`;
     },
     view(r){
-      const inDuel = r.a === myId || r.b === myId, bet = r.answers[myId];
+      const inDuel = r.a === myId || r.b === myId, vote = r.answers[myId];
       return card("pink", "Duel", TYPES.duel.vs(r) + `<h2 class="prompt sm">${esc(r.text)}</h2>`, chili(r.lvl)) +
-        (inDuel ? `<p class="hint">Taberen drikker ${tar(S()*2)}. Vær ærlig, når I er færdige:</p>
-          <div class="choices two"><button class="choice tall" data-act="lose"><span class="em">😩</span>Jeg tabte</button>
-          <button class="choice tall" data-act="tie"><span class="em">🤝</span>Uafgjort</button></div>`
-        : `<div class="label">Hvem vinder? Forkert gæt koster ${tar(S())}</div><div class="choices two">
-          <button class="choice tall" data-act="a" aria-pressed="${bet==="a"}"><span class="em">${emojiOf(r.a)}</span>${nameOf(r.a)}</button>
-          <button class="choice tall" data-act="b" aria-pressed="${bet==="b"}"><span class="em">${emojiOf(r.b)}</span>${nameOf(r.b)}</button></div>`) +
-        judge("Dommer: hvem vandt?", [["win:a", nameOf(r.a)], ["win:b", nameOf(r.b)], ["tie","Uafgjort"]]);
+        (inDuel ? `<p class="hint">Kæmp! Tilskuerne stemmer om, hvem der vandt. Taberen drikker ${tar(S()*2)}, og står det lige, drikker I begge ${tar(S())}.</p>`
+        : `<div class="label">Du er dommer. Stem, når duellen er slut</div><div class="choices two">
+          <button class="choice tall" data-act="a" aria-pressed="${vote==="a"}"><span class="em">${emojiOf(r.a)}</span>${nameOf(r.a)} vandt</button>
+          <button class="choice tall" data-act="b" aria-pressed="${vote==="b"}"><span class="em">${emojiOf(r.b)}</span>${nameOf(r.b)} vandt</button></div>
+          <button class="choice" data-act="tie" aria-pressed="${vote==="tie"}">🤝 Uafgjort</button>`) +
+        progress(TYPES.duel.judges(r), id => r.answers[id]);
     },
     result(r, res){
       const w = res.winner === "a" ? r.a : res.winner === "b" ? r.b : null;
-      return card("pink", "Duel", TYPES.duel.vs(r, res) + `<h2 class="prompt">${w ? `${nameOf(w)} vandt!` : "Uafgjort!"}</h2>`, chili(r.lvl)) +
-        (res.right.length || res.wrong.length ? `<div class="split"><div class="col"><h4>Gættede rigtigt</h4><div class="names">${res.right.map(nameOf).join(", ") || "Ingen"}</div></div>
-          <div class="col"><h4>Gættede forkert</h4><div class="names">${res.wrong.map(nameOf).join(", ") || "Ingen"}</div></div></div>` : "");
+      return card("pink", "Duel", TYPES.duel.vs(r, res) + `<h2 class="prompt">${w ? `${nameOf(w)} vandt!` : "Uafgjort!"}</h2>
+        <p>Dommernes stemmer: ${nameOf(r.a)} ${res.votes.a} · ${nameOf(r.b)} ${res.votes.b} · uafgjort ${res.votes.tie}</p>`, chili(r.lvl));
     }
   },
 
@@ -1711,9 +1801,20 @@ function banners(){
       <div class="txt">${esc(ev.text)}</div><div class="tbar"><i data-bar="${until}" data-dur="${ev.dur}" style="width:${Math.max(0,(until-Date.now())/ev.dur*100)}%"></i></div>
       <button class="btn small ink" data-a="call">Nogen brød reglen</button></div>`;
   }
+  const t = state.trial;
+  if(t){
+    const until = L(t.end), voters = trialVoters(), n = voters.filter(id => t.votes[id] !== undefined).length;
+    const canVote = voters.includes(myId) && t.votes[myId] === undefined;
+    h += `<div class="banner trial"><div class="top"><span class="lbl">🚨 Snyd?</span><span class="timer" data-until="${until}">${fmtLeft(Math.max(0, until - Date.now()))}</span></div>
+      <div class="txt">${who(t.accuser)} anklager ${who(t.accused)} for at snyde.</div>
+      ${canVote ? `<div class="row"><button class="btn small ink" ${sidej({k:"verdict", id:t.id, yes:true})}>Ja, snyd!</button><button class="btn small" ${sidej({k:"verdict", id:t.id, yes:false})}>Nej</button></div>`
+        : `<div class="hint" style="color:inherit">${n} af ${voters.length} har stemt. Flertal for snyd: ${nameOf(t.accused)} drikker ${tar(S()*2)}. Ellers drikker ${nameOf(t.accuser)} ${tar(S())}.</div>`}</div>`;
+  }
   state.missions.filter(m => m.agent === myId).forEach(m => {
-    h += `<div class="banner mission"><div class="top"><span class="lbl" style="color:var(--amber)">Din hemmelige mission 🤫</span><span class="lbl">til og med runde ${m.until}</span></div>
+    const until = L(m.end);
+    h += `<div class="banner mission"><div class="top"><span class="lbl" style="color:var(--amber)">Din hemmelige mission 🤫</span><span class="timer" data-until="${until}">${fmtLeft(Math.max(0, until - Date.now()))}</span></div>
       <div class="txt">Kald ${who(m.target)} for "${esc(m.name)}"</div>
+      <div class="tbar" style="color:var(--amber)"><i data-bar="${until}" data-dur="${m.dur}" style="width:${Math.max(0,(until-Date.now())/m.dur*100)}%"></i></div>
       <div class="row"><button class="btn small" ${sidej({k:"mission", id:m.id, ok:true})}>Klaret ✅</button><button class="btn small ghost" ${sidej({k:"mission", id:m.id, ok:false})}>Afsløret 😬</button></div></div>`;
   });
   return h;
@@ -1742,7 +1843,8 @@ function renderGame(){
     ${body}
   </div>
   ${ui.menu ? menuView() : ""}
-  ${ui.call ? callView() : ""}`;
+  ${ui.call ? callView() : ""}
+  ${ui.accuse ? accuseView() : ""}`;
   if(state.phase === "lobby" && isHost()) drawQR();
 }
 
@@ -1761,6 +1863,7 @@ function settings(enabled){
   return `<section class="panel">
     <div class="label">Tår pr. straf</div>${picker(LEVELS,"intensity","level",enabled)}
     <div class="label">Krydderi</div>${picker(SPICES,"spice","spice",enabled,"hot")}
+    <div class="label">Antal runder</div>${picker(ROUND_CHOICES.map(v => ({v, t:String(v), s:"runder"})),"maxRounds","rounds",enabled)}
     ${state.spice > 1 ? `<p class="hint consent">Du kan altid drikke ${tar(S()*2)} i stedet for en udfordring. Udfordringer med andre kræver, at de siger ja.</p>` : ""}
   </section>
   <section class="panel">
@@ -1799,9 +1902,24 @@ function roundView(){
   const r = state.round, T = TYPES[r.type];
   const body = MG_TYPES.includes(r.type) ? mgView(r) : T.view ? T.view(r) : "";
   const force = isHost() && T.done && Object.keys(r.answers).length ? `<button class="btn small" data-a="reveal">Vis resultat nu</button>` : "";
-  return `<div class="eyebrow"><span class="t">Runde ${r.n} · ${esc(T.name)}</span><span class="t">${tar(S())} pr. straf</span></div>
+  return `<div class="eyebrow"><span class="t">Runde ${r.n} af ${state.maxRounds} · ${esc(T.name)}</span><span class="t">${tar(S())} pr. straf</span></div>
     ${body}
-    ${isHost() ? `<div class="hostbar">${force}<button class="btn small ghost" data-a="skip">Spring over</button></div>` : ""}`;
+    ${isHost() ? `<div class="hostbar">${force}<button class="btn small ghost" data-a="skip">Spring over</button></div>` : ""}
+    ${cheatBtn()}`;
+}
+/* Alle kan starte en afstemning, hvis de mener, nogen snyder (kræver mindst 3 spillere) */
+function cheatBtn(){
+  if(state.trial || online().length < 3) return "";
+  return `<button class="btn small ghost" data-a="accuse">🚨 Nogen snyder</button>`;
+}
+function accuseView(){
+  return `<div class="scrim" data-a="accuse"></div>
+  <div class="sheet" role="dialog" aria-label="Hvem snyder"><div class="sheet-in">
+    <div class="label">Hvem snyder? De andre stemmer om det</div>
+    <p class="hint">Bliver de dømt, drikker de ${tar(S()*2)}. Bliver de frifundet, drikker du ${tar(S())}.</p>
+    <div class="voters">${online().filter(p => p.id !== myId).map(p => `<button class="choice" ${sidej({k:"accuse", id:p.id})}><span class="em">${avatar(p)}</span>${esc(p.name)}</button>`).join("")}</div>
+    <button class="btn small" data-a="accuse">Fortryd</button>
+  </div></div>`;
 }
 
 function drinkList(res){
@@ -1813,10 +1931,12 @@ function drinkList(res){
 function revealView(){
   const r = state.round, T = TYPES[r.type], res = r.reveal;
   const silent = (r.type === "mission" || r.type === "event") && !res.drink.length;
-  return `<div class="eyebrow"><span class="t">Runde ${r.n} · Resultat</span></div>
+  const last = state.n >= state.maxRounds;
+  return `<div class="eyebrow"><span class="t">Runde ${r.n} af ${state.maxRounds} · Resultat</span></div>
     ${T.result(r, res)}
     ${silent ? "" : drinkList(res)}
-    ${isHost() ? `<div class="stickybottom"><button class="btn primary" data-a="next">Næste runde</button></div>`
+    ${cheatBtn()}
+    ${isHost() ? `<div class="stickybottom"><button class="btn primary" data-a="next">${last ? "Se slutresultatet" : "Næste runde"}</button></div>`
       : `<p class="waiting">Venter på, at ${nameOf(state.hostId)} starter næste runde…</p>`}`;
 }
 
@@ -1885,7 +2005,7 @@ document.addEventListener("click", e => {
   if(em){ readHomeInputs(); me.emoji = em.dataset.emoji; me.photo = ""; store.set("skaal-emoji", me.emoji); store.del("skaal-photo"); return renderHome() }
   if(t.closest('[data-a="nophoto"]')){ readHomeInputs(); me.photo = ""; store.del("skaal-photo"); return renderHome() }
   const sd = t.closest("[data-side]");
-  if(sd){ const v = parseJ(sd.dataset.side); if(v) side(v); ui.call = false; return render() }
+  if(sd){ const v = parseJ(sd.dataset.side); if(v) side(v); ui.call = false; ui.accuse = false; return render() }
   const aj = t.closest("[data-actj]");
   if(aj){ const v = parseJ(aj.dataset.actj); if(v) act(v); return }
   const ac = t.closest("[data-act]");
@@ -1931,6 +2051,7 @@ document.addEventListener("click", e => {
   if(a === "cancel"){ teardown(); role=null; state=null; ui={...ui, screen:"home"}; return render() }
   if(a === "menu"){ ui.menu = !ui.menu; return render() }
   if(a === "call"){ ui.call = !ui.call; return render() }
+  if(a === "accuse"){ ui.accuse = !ui.accuse; return render() }
   if(a === "close") return closeGame();
   if(a === "peek"){ peek.on = !peek.on; return render() }
   if(a === "mfksend"){ act({m:mfkSel.m, f:mfkSel.f, k:mfkSel.k}); return }
