@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Figtree:wght@400;600;800&display=swap">
 <style>
-/* Layout: én kolonne, telefon-først. Topbar med kode + egne tår/sejre, et stort kort pr. runde, handlinger under. */
+/* Layout: én kolonne, telefon-først. Topbar med kode + egne tår/sejre, bannere for hændelser/missioner, et stort kort pr. runde. */
 :root{
   --bg:#23101B;        /* aubergine bodega-mørke */
   --bg2:#33172A;
@@ -23,6 +23,7 @@
   --amber:#FFB020;     /* pilsner */
   --pink:#FF5C8A;
   --teal:#3DD6C0;
+  --sky:#6EC1FF;
   --violet:#A98BFF;
   --red:#FF4D3D;
   --green:#2FD36B;
@@ -45,12 +46,24 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-
 
 /* Topbar */
 .topbar{position:fixed;top:0;left:0;right:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px}
-.topbar-in{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:8px}
-.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:var(--bg2);border:1px solid var(--line);font-weight:800;font-size:14px;letter-spacing:.06em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.topbar-in{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;background:var(--bg2);border:1px solid var(--line);font-weight:800;font-size:14px;letter-spacing:.04em;white-space:nowrap;font-variant-numeric:tabular-nums}
 .chip .k{color:var(--muted);font-weight:600;letter-spacing:.04em;font-size:11px;text-transform:uppercase}
 .spacer{flex:1}
 .iconbtn{width:44px;height:44px;flex:none;border-radius:14px;background:var(--bg2);border:1px solid var(--line);display:grid;place-items:center;font-size:20px}
 .offline-banner{background:var(--red);color:#fff;text-align:center;font-weight:800;padding:8px 12px;border-radius:14px;font-size:14px}
+
+/* Bannere: hændelse og hemmelig mission */
+.banner{border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.banner .top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:800}
+.banner .top .lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+.banner .txt{font-weight:800;font-size:17px;line-height:1.3}
+.banner.event{background:var(--amber);color:var(--ink)}
+.banner.mission{background:var(--bg2);border:2px dashed var(--amber)}
+.tbar{height:6px;border-radius:3px;background:rgba(0,0,0,.18);overflow:hidden}
+.banner.mission .tbar{background:var(--line)}
+.tbar i{display:block;height:100%;background:currentColor;transition:width .2s linear}
+.timer{font-family:var(--display);font-variant-numeric:tabular-nums}
 
 /* Hero */
 .hero{padding-top:24px;text-align:center;position:relative}
@@ -70,6 +83,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-
 .emojis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
 .emojis button{aspect-ratio:1;min-width:0;padding:0;border-radius:12px;font-size:24px;background:var(--bg);border:2px solid transparent}
 .emojis button[aria-pressed="true"]{border-color:var(--amber);background:#4a2a1a}
+.photorow{display:flex;align-items:center;gap:10px}
+.photorow .btn{width:auto;flex:1;cursor:pointer}
+.avatar-lg{width:64px;height:64px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:38px;background:var(--bg);border:2px solid var(--amber);overflow:hidden}
+.avatar-lg img{width:100%;height:100%;object-fit:cover}
+img.av{width:1.15em;height:1.15em;border-radius:50%;object-fit:cover;vertical-align:-.22em;display:inline-block;background:var(--line)}
 .err{color:var(--pink);font-weight:600;margin:0}
 .hint{color:var(--muted);font-size:14px;line-height:1.45;margin:0}
 
@@ -77,8 +95,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-
 .btn:active{transform:scale(.97)}
 .btn.primary{background:var(--amber);color:var(--ink);border-color:var(--amber);box-shadow:0 5px 0 #8A4A00}
 .btn.primary:active{box-shadow:0 1px 0 #8A4A00;transform:translateY(4px)}
+.btn.go{background:var(--green);color:var(--ink);border-color:var(--green)}
 .btn.ghost{background:transparent}
 .btn.small{min-height:44px;font-size:15px;padding:10px 14px;border-radius:14px}
+.btn.ink{background:var(--ink);color:var(--foam);border-color:var(--ink)}
 .btn:disabled{opacity:.45;pointer-events:none}
 .row{display:flex;gap:10px}
 .row>*{flex:1;min-width:0}
@@ -101,6 +121,12 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-
 .seg.hot button[aria-pressed="true"]{background:var(--pink);color:var(--ink)}
 .seg button small{display:block;font-weight:600;font-size:11px;opacity:.85}
 .consent{border-left:4px solid var(--pink);padding:2px 0 2px 12px}
+.toggles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tog{padding:10px 12px;border-radius:14px;background:var(--bg);border:2px solid var(--line);text-align:left;font-weight:800;font-size:14px;line-height:1.25;min-width:0}
+.tog small{display:block;font-weight:600;color:var(--muted);font-size:12px;margin-top:2px}
+.tog[aria-pressed="true"]{border-color:var(--amber)}
+.tog[aria-pressed="false"]{opacity:.4;text-decoration:line-through}
+.tog:disabled{cursor:default}
 
 /* Spilkort */
 .eyebrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
@@ -111,33 +137,35 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-
 .card .prompt{font-family:var(--display);font-size:clamp(25px,7.2vw,34px);line-height:1.12;margin:10px 0 0;text-wrap:balance;font-weight:400}
 .card .prompt.sm{font-size:clamp(21px,6vw,27px)}
 .card .who{font-weight:800;font-size:18px;margin-top:6px}
+.card p{margin:10px 0 0;font-weight:600;line-height:1.4}
 .card b{font-weight:800}
-.card.vote{--c:var(--amber)}
-.card.duel{--c:var(--pink)}
-.card.hot{--c:var(--violet)}
-.card.game{--c:var(--teal)}
+.card.amber{--c:var(--amber)}
+.card.pink{--c:var(--pink)}
+.card.violet{--c:var(--violet)}
+.card.teal{--c:var(--teal)}
+.card.sky{--c:var(--sky)}
+.card.red{--c:var(--red)}
 .card.chaos{--c:var(--foam);background:repeating-linear-gradient(-45deg,var(--foam) 0 22px,#FFE7C2 22px 44px)}
-.chili{letter-spacing:-.1em;opacity:1}
+.card.secret{--c:var(--bg2);color:var(--foam);border:2px dashed var(--amber);box-shadow:none}
+.card.secret .kind{color:var(--amber);opacity:1}
+.chili{letter-spacing:-.1em}
 
 .vs{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:14px;text-align:center}
 .vs .side{min-width:0}
 .vs .e{font-size:44px;line-height:1}
 .vs .nm{font-weight:800;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.vs .x{font-family:var(--display);font-size:34px;transform:rotate(-8deg)}
+.vs .x{font-family:var(--display);font-size:30px;transform:rotate(-8deg)}
 .vs .side.win .nm::after{content:" 🏆"}
 .vs .side.lose{opacity:.55}
 
 /* Minispil-flade */
-.pad{min-height:320px;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:24px;user-select:none;-webkit-user-select:none;touch-action:none;cursor:pointer;background:var(--bg2);border:2px solid var(--line);color:var(--foam);position:relative}
+.pad{min-height:300px;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:24px;user-select:none;-webkit-user-select:none;touch-action:none;cursor:pointer;background:var(--bg2);border:2px solid var(--line);color:var(--foam);position:relative}
 .pad .big{font-family:var(--display);font-size:clamp(48px,16vw,76px);line-height:1;font-variant-numeric:tabular-nums}
-.pad p{margin:0;font-weight:600;color:inherit;opacity:.85}
+.pad p{margin:0;font-weight:600;opacity:.85}
 .pad.wait{background:var(--red);border-color:var(--red);color:#fff}
 .pad.go{background:var(--green);border-color:var(--green);color:var(--ink)}
 .pad.play{background:var(--teal);border-color:var(--teal);color:var(--ink)}
 .pad.play:active{transform:scale(.985)}
-.mathq{font-family:var(--display);font-size:clamp(40px,13vw,60px);line-height:1}
-.mathopts{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
-.mathopts button{min-height:70px;border-radius:18px;background:var(--foam);color:var(--ink);font-family:var(--display);font-size:30px}
 
 .choices{display:grid;gap:10px}
 .choices.two{grid-template-columns:1fr 1fr}
@@ -146,12 +174,45 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-
 .choice[aria-pressed="true"]{background:var(--foam);color:var(--ink);border-color:var(--foam)}
 .choice.tall{min-height:110px;flex-direction:column}
 .choice.hotpick{min-height:130px;font-family:var(--display);font-weight:400;font-size:26px}
+.choice:disabled{opacity:.4}
 .voters{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
 
 .progress{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .dot{display:inline-flex;align-items:center;gap:4px;padding:4px 10px 4px 6px;border-radius:999px;background:var(--bg2);border:1px solid var(--line);font-size:13px;font-weight:600}
 .dot.ok{background:#1f3a2c;border-color:var(--green)}
 .dot .e{font-size:16px}
+
+/* Ord, bogstaver, tastatur, kæde, MFK */
+.words{display:flex;flex-wrap:wrap;gap:8px}
+.word{font-family:var(--display);font-size:26px;background:var(--foam);color:var(--ink);padding:6px 14px;border-radius:14px}
+.peek{min-height:120px;border-radius:22px;border:2px dashed var(--line);display:grid;place-items:center;text-align:center;padding:16px;background:var(--bg2)}
+.peek .w{font-family:var(--display);font-size:clamp(36px,11vw,52px);line-height:1}
+.board-letters{display:flex;flex-wrap:wrap;gap:12px 16px;justify-content:center;padding:6px 0}
+.lw{display:flex;gap:3px}
+.lc{width:24px;height:34px;border-bottom:3px solid currentColor;display:grid;place-items:center;font-family:var(--display);font-size:21px;line-height:1}
+.abc{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+.abc button{height:46px;border-radius:10px;background:var(--foam);color:var(--ink);font-weight:800;font-size:18px;min-width:0;padding:0}
+.abc button:disabled{opacity:.2}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.keypad button{height:58px;border-radius:14px;background:var(--bg2);border:2px solid var(--line);font-family:var(--display);font-size:26px}
+.keypad button.ok{background:var(--amber);color:var(--ink);border-color:var(--amber)}
+.kpdisp{font-family:var(--display);font-size:44px;text-align:center;min-height:64px;background:var(--bg);border:2px solid var(--line);border-radius:16px;padding:6px;font-variant-numeric:tabular-nums}
+.eq{font-family:var(--display);font-size:clamp(34px,11vw,48px);text-align:center;line-height:1.1}
+.chain{display:flex;flex-direction:column;gap:6px}
+.step{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--bg2);border:1px solid var(--line)}
+.step .e{font-size:24px}
+.step .n{flex:1;min-width:0;font-weight:800}
+.step .n small{display:block;font-weight:600;color:var(--muted)}
+.step.done{opacity:.5}
+.step.now{border-color:var(--green);background:#1f3a2c}
+.step.me .n::after{content:" · dig";color:var(--amber)}
+.mfk{display:flex;flex-direction:column;gap:8px}
+.mfkrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.mfkrow .nm{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mfkbtns{display:flex;gap:6px}
+.mfkbtns button{min-width:56px;height:44px;border-radius:12px;background:var(--bg);border:2px solid var(--line);font-weight:800;font-size:13px;padding:0 8px}
+.mfkbtns button[aria-pressed="true"]{background:var(--pink);color:var(--ink);border-color:var(--pink)}
+.counter{font-family:var(--display);font-size:72px;line-height:1;text-align:center;font-variant-numeric:tabular-nums}
 
 /* Resultat */
 .result{display:flex;flex-direction:column;gap:8px}
@@ -190,7 +251,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-
 .podium .p .nm{font-weight:800;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .podium .p .s{font-family:var(--display);font-size:24px;color:var(--amber)}
 .podium .p1{padding-block:26px;border-color:var(--amber)}
-.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);transform:translateX(-50%);background:var(--foam);color:var(--ink);font-weight:800;padding:12px 18px;border-radius:14px;z-index:50;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);background:var(--foam);color:var(--ink);font-weight:800;padding:12px 18px;border-radius:14px;z-index:50;box-shadow:0 8px 30px rgba(0,0,0,.4);text-align:center}
 .foot{font-size:12px;color:var(--muted);text-align:center;opacity:.8;margin:0}
 </style>
 </head>
@@ -203,7 +264,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-
 <script>
 "use strict";
 /* ============================================================
-   INDHOLD  — [krydderi 1-3, tekst]
+   INDHOLD — [krydderi 1-3, ...]
    ============================================================ */
 const DUELS = [
   [1,"Stirrekonkurrence. Den første, der blinker eller griner, taber."],
@@ -217,7 +278,6 @@ const DUELS = [
   [1,"Skiftevis: nævn lande, der starter med S. Den, der går i stå, taber."],
   [1,"Bund et glas vand. Hurtigst vinder."],
   [1,"Freestyle-rap om modstanderen i 20 sekunder hver. Bordet afgør."],
-  [1,"Sig alfabetet baglæns. Hurtigst uden fejl vinder."],
   [2,"Det mest forførende blik. Bordet afgør."],
   [2,"Bedste pickup-line til en i rummet. Bordet afgør."],
   [2,"Sexet catwalk på tværs af rummet. Bordet afgør."],
@@ -225,14 +285,12 @@ const DUELS = [
   [2,"Twerk-duel i 15 sekunder. Bordet afgør."],
   [2,"Hvisk noget flirtende i øret på værten. Værten vælger vinderen."],
   [2,"Bedste lapdance for en tom stol i 20 sekunder. Bordet afgør."],
-  [2,"Skiftevis: nævn ord for at kysse. Den, der går i stå, taber."],
   [2,"Spis en banan så sexet som muligt. Bordet afgør."],
   [3,"Den mest overbevisende stønnelyd. Bordet afgør."],
   [3,"Strip-race: sokker og trøje af og på igen. Hurtigst vinder."],
   [3,"Sexet dans for bordet i 20 sekunder hver. Bordet afgør."],
   [3,"Beskriv dit drømme-one-night-stand på 20 sekunder. Mest overbevisende vinder."],
-  [3,"Byt et stykke tøj med hinanden. Den, der er hurtigst klædt om, vinder."],
-  [3,"Skiftevis: giv en villig person i rummet et kys på kinden. Den, der løber tør for villige, taber."]
+  [3,"Byt et stykke tøj med hinanden. Den, der er hurtigst klædt om, vinder."]
 ];
 const DARES = [
   [1,"Syng omkvædet af en sang, bordet vælger, som en operasanger."],
@@ -241,53 +299,39 @@ const DARES = [
   [1,"Lad bordet give dig et kælenavn, som alle bruger resten af aftenen."],
   [1,"Ring til en ven og sig 'jeg savner dig' uden at forklare hvorfor."],
   [1,"Lav din bedste Michael Jackson-dans i 20 sekunder."],
-  [1,"Spis en skefuld af noget, bordet vælger fra køleskabet."],
   [2,"Giv personen til venstre en skuldermassage i 30 sekunder."],
   [2,"Send 'tænker på dig 😏' til den sidste, du har skrevet med."],
   [2,"Lad bordet læse din seneste chat højt i 10 sekunder."],
   [2,"Sid på skødet af en villig person efter eget valg til næste runde."],
-  [2,"Giv én i rummet et kompliment med dit mest forførende blik."],
   [2,"Lav en sexet dans i 20 sekunder."],
   [2,"Vis de seneste 5 billeder i din kamerarulle."],
   [2,"Hvisk en pickup-line i øret på en efter eget valg."],
   [2,"Like et gammelt billede på din eks' Instagram."],
-  [2,"Byt trøje med personen overfor dig."],
-  [2,"Lad bordet skrive en story på din Instagram."],
   [3,"Kys en villig person efter eget valg på kinden. Eller halsen."],
   [3,"Tag ét stykke tøj af. Sko og sokker tæller ikke."],
   [3,"Giv en villig person en lapdance i 20 sekunder."],
   [3,"Tag et bodyshot fra en villig person."],
   [3,"Giv en isterning videre fra din mund til en villig persons mund. Ingen hænder."],
-  [3,"Bid let i øreflippen på en villig person."],
-  [3,"Lad en villig person skrive sit navn på dig med tusch. Du vælger stedet."],
-  [3,"Lav din bedste orgasmelyd. Højt."],
-  [3,"Send en flirtende besked til den, bordet vælger blandt dine kontakter."]
+  [3,"Lav din bedste orgasmelyd. Højt."]
 ];
 const TRUTHS = [
   [1,"Hvad er det pinligste, der er sket for dig på en date?"],
   [1,"Hvad er den værste løgn, du har fortalt?"],
   [1,"Hvem var dit første crush?"],
   [1,"Hvad er det mærkeligste, du har googlet?"],
-  [1,"Har du nogensinde læst en andens beskeder i smug?"],
   [1,"Hvad er det dummeste, du har brugt penge på?"],
   [2,"Hvem i rummet ville du helst date?"],
   [2,"Hvad er det mest pinlige, du har sendt til et crush?"],
   [2,"Hvornår kyssede du sidst nogen, og hvem var det?"],
   [2,"Hvad er din største turn-on?"],
-  [2,"Hvad er din største turn-off?"],
   [2,"Har du haft et crush på en vens kæreste?"],
-  [2,"Hvad er det vildeste sted, du har kysset nogen?"],
   [2,"Hvem i rummet ville du helst sidde fast i en elevator med?"],
-  [2,"Har du ghostet nogen efter en date? Hvorfor?"],
   [3,"Hvad er det vildeste sted, du har haft sex?"],
   [3,"Hvad er din hemmelige fantasi?"],
-  [3,"Hvor mange har du kysset i år?"],
   [3,"Har du nogensinde sendt et frækt billede? Til hvem?"],
   [3,"Hvem i rummet ville du tage med hjem i aften?"],
-  [3,"Hvad er det frækkeste, du har gjort et offentligt sted?"],
   [3,"Fortæl om din bedste eller værste one-night stand."],
-  [3,"Hvad er det mest pinlige, der er sket under sex?"],
-  [3,"Hvad er det længste, du har gået uden sex?"]
+  [3,"Hvad er det mest pinlige, der er sket under sex?"]
 ];
 const VOTES = [
   [1,"Hvem ender på skadestuen først i aften?"],
@@ -295,55 +339,87 @@ const VOTES = [
   [1,"Hvem lyver bedst?"],
   [1,"Hvem bliver først fuld?"],
   [2,"Hvem er bedst til at kysse?"],
-  [2,"Hvem har den vildeste fortid?"],
   [2,"Hvem ender med at score i aften?"],
   [2,"Hvem skriver til sin eks i nat?"],
-  [2,"Hvem har flest dating-apps på telefonen?"],
   [2,"Hvem er den største player?"],
   [3,"Hvem er vildest i sengen?"],
   [3,"Hvem har den frækkeste søgehistorik?"],
-  [3,"Hvem har haft flest one-night stands?"],
-  [3,"Hvem har sendt flest frække billeder?"],
   [3,"Hvem går hjem med en fremmed i aften?"]
 ];
-/* who: rand = {p} drikker, pair = {p}+{q}, all = alle, least = færrest tår, none = kun tekst */
 const CHAOS = [
   {l:1,t:"{p} drikker {S}. Bare fordi.",who:"rand"},
   {l:1,t:"Alle drikker {S}. Skål!",who:"all"},
-  {l:1,t:"{p} og {q} drikker {S} med armene krydset.",who:"pair"},
   {l:1,t:"{p} har færrest tår. Tid til at indhente: drik {S}.",who:"least"},
   {l:1,t:"Tommelfinger-mester: {p} kan når som helst lægge tommelen på bordet. Den sidste, der følger, drikker {S}.",who:"none"},
-  {l:1,t:"Ny regel: Ingen må sige 'drik'. Den, der gør det, drikker {S}. {p} holder øje.",who:"none"},
   {l:1,t:"Hånden i vejret! Den sidste, der rækker hånden op, drikker {S}. NU!",who:"none"},
   {l:1,t:"{p} må dele {S} ud til hvem de vil.",who:"none"},
   {l:2,t:"Alle singler drikker {S}.",who:"none"},
-  {l:2,t:"{p} og {q} holder i hånd til næste runde. Slipper I, drikker I {S}.",who:"none"},
   {l:2,t:"{p} vælger en villig person, der sidder på deres skød til næste runde.",who:"none"},
   {l:2,t:"Alle, der har kysset nogen i rummet, drikker {S}.",who:"none"},
-  {l:2,t:"{p} og {q}: stir hinanden i øjnene i 30 sekunder. Den, der griner, drikker {S}.",who:"none"},
-  {l:2,t:"Alle med en dating-app på telefonen lige nu drikker {S}.",who:"none"},
   {l:3,t:"Alle, der har haft en one-night stand, drikker {S}.",who:"none"},
-  {l:3,t:"{p} vælger to villige, der giver hinanden et kys på kinden. Ellers drikker de begge {S}.",who:"none"},
-  {l:3,t:"Alle, der har sendt et frækt billede, drikker {S}.",who:"none"},
-  {l:3,t:"Alle, der har haft sex udendørs, drikker {S}.",who:"none"},
-  {l:3,t:"{p} tager et bodyshot fra {q}, hvis {q} siger ja. Ellers drikker {p} {S}.",who:"none"}
+  {l:3,t:"Alle, der har sendt et frækt billede, drikker {S}.",who:"none"}
 ];
+/* Idé 2: opdigtede navne */
+const FAKE_NAMES = ["Bent","Gunnar","Brian","Jytte","Kaj","Birthe","Torben","Dorthe","Svend-Erik","Lone","Kurt","Hanne","Preben","Bodil","Ole","Grethe","Jørgen","Ib","Kenneth","Connie"];
+/* Idé 5: bruges når der er færre end 4 spillere */
+const FICTIONAL = ["Shrek","Jack Sparrow","Barbie","Ken","Gollum","Batman","Mr. Bean","Elsa fra Frost","Sherlock Holmes","Kaptajn Haddock","Wonder Woman","Jokeren","Fiona","Dracula","Tarzan","Lara Croft"];
+/* Idé 8: hændelser. {p} = spiller, {w} = ord, d = sekunder */
+const EVENTS = [
+  {l:1,t:"Ingen må sige 'ja'.",d:60},
+  {l:1,t:"Ingen må sige 'nej'.",d:60},
+  {l:1,t:"Ingen må sige {P} navn.",d:90},
+  {l:1,t:"Alle skal tale med accent.",d:60},
+  {l:1,t:"Ingen må pege på andre.",d:90},
+  {l:1,t:"Alle skal starte deres sætninger med '{w}'.",d:60},
+  {l:1,t:"Ingen må bande.",d:90},
+  {l:1,t:"Alle skal drikke med venstre hånd.",d:120},
+  {l:1,t:"Ingen må grine.",d:45},
+  {l:1,t:"Alle skal tale om sig selv i tredje person.",d:60},
+  {l:2,t:"Alle skal kalde hinanden 'skat'.",d:90},
+  {l:2,t:"Ingen må have øjenkontakt med {p}.",d:60},
+  {l:2,t:"Alle skal blinke flirtende, hver gang de taler.",d:60}
+];
+const EVENT_WORDS = ["Banan","Altså","Undskyld, men","Kære venner","Hold da op","Som min mor siger"];
+/* Idé 9: sætninger der skal samles */
+const SENTENCES = [
+  [1,"Den der drikker sidst vasker op"],
+  [1,"Min mor kan slå alle her"],
+  [1,"Fredag aften er hellig for os alle"],
+  [1,"Kaptajnen har gemt øllet i fryseren"],
+  [1,"En and gik ind på en bar"],
+  [1,"Hvem har spist min sidste pizza"],
+  [1,"Skål for alle de gode venner"],
+  [1,"Naboens kat stjal min hat i går"],
+  [1,"Den grønne flodhest danser bedst om natten"],
+  [2,"Den lækreste person sidder lige ved siden af dig"],
+  [2,"Hvem sendte det frække billede i nat"],
+  [3,"Kys mig før jeg falder i søvn"]
+];
+/* Idé 10: [krydderi, kategori, holdets ord, impostorens ord] */
+const IMPOSTOR = [
+  [1,"Drikke","Øl","Cider"],[1,"Ferie","Mallorca","Kanarieøerne"],[1,"Mad","Pizza","Burger"],[1,"Dyr","Kat","Ræv"],
+  [1,"Fest","Bryllup","Konfirmation"],[1,"Sport","Fodbold","Håndbold"],[1,"Steder","Strand","Swimmingpool"],
+  [1,"Byer","Aarhus","Odense"],[1,"Snacks","Chips","Popcorn"],[1,"Musik","Guitar","Ukulele"],[1,"Transport","Cykel","Løbehjul"],
+  [1,"Jul","Risalamande","Æbleskiver"],[1,"Morgen","Kaffe","Te"],[1,"Byen","Natklub","Bodega"],
+  [2,"Dating","Tinder","Bumble"],[2,"Kys","Tungekys","Kindkys"],[2,"Undertøj","Boxershorts","G-streng"],
+  [3,"Natten","One-night stand","Walk of shame"],[3,"Fest","Bodyshot","Tequila-shot"]
+];
+/* Idé 11: sætninger til gæt bogstavet */
+const PHRASES = [
+  [1,"SKÅL FOR VÆRTEN"],[1,"DEN SIDSTE ØL ER DEN BEDSTE"],[1,"ALDRIG MERE TEQUILA"],
+  [1,"EN FOR ALLE ALLE FOR EN"],[1,"LIVET ER FOR KORT TIL LUNKEN ØL"],[1,"VI SES I MORGEN MED TØMMERMÆND"],
+  [1,"FREDAGSBAR HELE UGEN"],[1,"HVAD DER SKER I BYEN BLIVER I BYEN"],[1,"DANSKERE ELSKER FADØL"],
+  [2,"KYS MIG IGEN"],[2,"HVEM SKAL MED HJEM I AFTEN"],[3,"WALK OF SHAME"]
+];
+const ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ".split("");
+/* Idé 12: handlinger i kæden */
+const CHAIN_ACTIONS = ["Klap én gang","Bank i bordet","Råb 'Skål!'","Løft dit glas","Knips","Rejs dig op","Sig 'Hej'","Stamp i gulvet","Vink","Peg på loftet"];
 
-const TYPES = {
-  duel:{kind:"Duel",w:3},
-  hot:{kind:"Sandhed eller konsekvens",w:2.5},
-  reflex:{kind:"Hurtigste finger",w:1,game:true},
-  tap:{kind:"Tap-krig",w:1,game:true},
-  stopwatch:{kind:"Stop uret",w:1,game:true},
-  math:{kind:"Hovedregning",w:0.9,game:true},
-  vote:{kind:"Afstemning",w:1.2},
-  chaos:{kind:"Kaoskort",w:1.2}
-};
 const EMOJIS = ["🍺","🍷","🥂","🍹","🥃","🍾","🧉","🍸","🦄","🐸","🐙","🦊","🐻","🐷","🦖","👽","🤠","🥸","😎","🤡","👑","🔥","🌶️","🍑"];
 const LEVELS = [{v:1,t:"Mild",s:"1 tår"},{v:2,t:"Medium",s:"2 tår"},{v:3,t:"Vild",s:"3 tår"}];
 const SPICES = [{v:1,t:"Hyggelig",s:"Ingen flirt"},{v:2,t:"Spicy",s:"🌶️🌶️"},{v:3,t:"Uartig",s:"🌶️🌶️🌶️"}];
 const PREFIX = "skaal-dk-v1-";
-const SAVE_HOST = "skaal-host2", SAVE_LAST = "skaal-last";
+const SAVE_HOST = "skaal-host3", SAVE_LAST = "skaal-last";
 
 /* ============================================================
    HJÆLPERE
@@ -356,18 +432,42 @@ const store = {
   del(k){try{localStorage.removeItem(k)}catch(e){}}
 };
 const rnd = n => Math.floor(Math.random()*n);
+const pick = a => a[rnd(a.length)];
 const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]} return a };
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const clean = (s,max) => String(s ?? "").replace(/[\u0000-\u001f\u007f]/g,"").trim().slice(0,max);
+const norm = s => String(s ?? "").toLowerCase().replace(/[^a-z0-9æøåéü ]/g," ").replace(/\s+/g," ").trim();
 const tar = n => n + " tår";
+const gen = n => /[sxz]$/i.test(n) ? n + "'" : n + "s";   // dansk ejefald: Lukas' / Mads' / Sofies
 const buzz = ms => { if(navigator.vibrate) try{ navigator.vibrate(ms) }catch(e){} };
 const dk = (n,d) => n.toFixed(d).replace(".",",");
+const isObj = v => v && typeof v === "object" && !Array.isArray(v);
 function makeCode(){const a="ABCDEFGHJKLMNPRSTUVWXYZ";let s="";for(let i=0;i<4;i++)s+=a[rnd(a.length)];return s}
-function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2200)}
+function toast(msg, ms){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||2400)}
+function fmtLeft(ms){ const s = Math.ceil(ms/1000); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0") }
 
 let myId = store.get("skaal-id");
 if(!myId){myId="p"+Math.random().toString(36).slice(2,10);store.set("skaal-id",myId)}
-const me = {name: store.get("skaal-name") || "", emoji: store.get("skaal-emoji") || EMOJIS[rnd(EMOJIS.length)]};
+const me = {name: store.get("skaal-name") || "", emoji: store.get("skaal-emoji") || pick(EMOJIS), photo: store.get("skaal-photo") || ""};
+/* Profilbilleder er små JPEG'er som data-URL; alt andet afvises */
+const okPhoto = s => typeof s === "string" && s.length < 24000 && /^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(s) ? s : "";
+
+/* Beskær til kvadrat og skaler ned til 96×96, så billedet er let at sende rundt */
+async function processPhoto(file){
+  if(!file || !/^image\//.test(file.type)) return toast("Vælg et billede.");
+  const url = URL.createObjectURL(file);
+  try{
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url });
+    const size = 96, c = document.createElement("canvas"); c.width = c.height = size;
+    const s = Math.min(img.naturalWidth, img.naturalHeight);
+    c.getContext("2d").drawImage(img, (img.naturalWidth - s)/2, (img.naturalHeight - s)/2, s, s, 0, 0, size, size);
+    const data = okPhoto(c.toDataURL("image/jpeg", 0.75));
+    if(!data) throw new Error("for stort");
+    me.photo = data; store.set("skaal-photo", data);
+  }catch(e){ toast("Kunne ikke læse billedet. Prøv et andet.") }
+  finally{ URL.revokeObjectURL(url) }
+  renderHome();
+}
 
 /* ============================================================
    TILSTAND
@@ -375,24 +475,30 @@ const me = {name: store.get("skaal-name") || "", emoji: store.get("skaal-emoji")
 let role = null;          // "host" | "guest" | null
 let state = null;         // delt spiltilstand (værten ejer den)
 let peer = null;
-let ui = {screen:"home", err:"", code:"", menu:false, online:true};
+let ui = {screen:"home", err:"", code:"", menu:false, online:true, call:false};
 const guests = new Map(); // vært: playerId -> {conn, seen}
 let hostConn = null, guestTimer = null, lastHostMsg = 0, everConnected = false, connecting = false;
+let clockOffset = 0;      // lokal tid minus værtens tid
+let lastJson = "", lastFlash = null;
 
 const player = id => state && state.players.find(p => p.id === id);
-const sipsBase = () => (state && state.intensity) || 2;
+const online = () => state.players.filter(p => p.online);
+const S = () => (state && state.intensity) || 2;
+const L = t => t + clockOffset;   // værtens tidsstempel -> lokal tid
 
 /* ============================================================
-   VÆRT
+   VÆRT: netværk
    ============================================================ */
 function newState(code){
-  return {code, phase:"lobby", hostId:myId, intensity:2, spice:2, n:0, round:null, used:{}, count:{},
-          players:[{id:myId,name:me.name,emoji:me.emoji,sips:0,wins:0,online:true}]};
+  const enabled = {}; Object.keys(TYPES).forEach(t => enabled[t] = true);
+  return {code, phase:"lobby", hostId:myId, intensity:2, spice:2, n:0, round:null, used:{}, count:{}, enabled,
+          buddy:null, missions:[], event:null, flash:null, fid:0,
+          players:[{id:myId,name:me.name,emoji:me.emoji,photo:me.photo,sips:0,wins:0,online:true}]};
 }
 
 function hostGame(resume){
   teardown();
-  role = "host";
+  role = "host"; clockOffset = 0;
   ui = {...ui, screen:"connecting", err:"", menu:false};
   render();
   const code = resume ? resume.code : makeCode();
@@ -402,7 +508,7 @@ function hostGame(resume){
     peer.on("open", () => {
       if(!state || state.code !== code) state = resume || newState(code);
       const mine = player(myId);
-      if(mine){mine.name=me.name;mine.emoji=me.emoji;mine.online=true}
+      if(mine){mine.name=me.name;mine.emoji=me.emoji;mine.photo=me.photo;mine.online=true}
       state.players.forEach(p => { if(p.id!==myId) p.online=false });
       ui.screen = "game"; ui.online = true;
       commit(); keepAwake();
@@ -429,25 +535,26 @@ function hostGame(resume){
 }
 
 function onGuestData(conn, d){
-  if(!d || typeof d !== "object" || !state) return;
+  if(!isObj(d) || !state) return;
   if(d.t === "hello"){
-    const id = clean(d.id, 24), name = clean(d.name, 16) || "Gæst", emoji = clean(d.emoji, 8) || "🍺";
+    const id = clean(d.id, 24), name = clean(d.name, 16) || "Gæst", emoji = clean(d.emoji, 8) || "🍺", photo = okPhoto(d.photo);
     if(!id || id === myId) return;
     const old = guests.get(id);
     if(old && old.conn !== conn) try{ old.conn.close() }catch(e){}
     guests.set(id, {conn, seen:Date.now()});
     conn._pid = id;
     const p = player(id);
-    if(p){ p.name=name; p.emoji=emoji; p.online=true }
-    else state.players.push({id,name,emoji,sips:0,wins:0,online:true});
+    if(p){ p.name=name; p.emoji=emoji; p.photo=photo; p.online=true }
+    else state.players.push({id,name,emoji,photo,sips:0,wins:0,online:true});
     commit();
     return;
   }
   const id = conn._pid; if(!id) return;
   const g = guests.get(id); if(g) g.seen = Date.now();
-  const p = player(id);
-  if(d.t === "ping"){ if(p && !p.online){ p.online=true; commit() } return }
-  if(d.t === "act" && p) hostAct(id, d.n, d.v);
+  const p = player(id); if(!p) return;
+  if(d.t === "ping"){ if(!p.online){ p.online=true; commit() } return }
+  if(d.t === "act") hostAct(id, d.n, d.v);
+  if(d.t === "side" && isObj(d.v)) hostSide(id, d.v);
   if(d.t === "leave") removePlayer(id);
 }
 
@@ -461,11 +568,13 @@ function removePlayer(id){
   if(id === myId) return;
   const g = guests.get(id); if(g){ try{ g.conn.send({t:"kicked"}) }catch(e){} setTimeout(()=>{try{g.conn.close()}catch(e){}},300); guests.delete(id) }
   state.players = state.players.filter(p => p.id !== id);
+  state.missions = state.missions.filter(m => m.agent !== id && m.target !== id);
+  if(state.buddy && (state.buddy.a === id || state.buddy.b === id)) state.buddy = null;
   commit(); checkAllIn();
 }
 
 function broadcast(){
-  const msg = {t:"state", s:state};
+  const msg = {t:"state", s:state, now:Date.now()};
   guests.forEach(g => { if(g.conn.open) try{ g.conn.send(msg) }catch(e){} });
 }
 function commit(){
@@ -479,7 +588,9 @@ setInterval(() => {
   if(changed){ commit(); checkAllIn() } else broadcast();   // fungerer også som hjerteslag
 }, 4000);
 
-/* ---- kort og runder ---- */
+/* ============================================================
+   VÆRT: runder
+   ============================================================ */
 const lvl = c => Array.isArray(c) ? c[0] : c.l;
 function pickCard(key, arr){
   const spice = state.spice;
@@ -488,175 +599,128 @@ function pickCard(key, arr){
   let free = ok.filter(i => !used.includes(i));
   if(!free.length){ used.length = 0; free = ok }
   const top = free.filter(i => lvl(arr[i]) === spice);
-  if(spice > 1 && top.length && Math.random() < 0.65) free = top;   // højere krydderi = flere af de stærke kort
-  const i = free[rnd(free.length)];
+  if(spice > 1 && top.length && Math.random() < 0.6) free = top;   // højere krydderi = flere af de stærke kort
+  const i = pick(free);
   used.push(i); return arr[i];
 }
-function pickType(nOnline){
-  const last = state.round && state.round.type;
-  const opts = Object.entries(TYPES).filter(([t]) => t !== last && !(t === "duel" && nOnline < 2));
-  const total = opts.reduce((a,[,v]) => a + v.w, 0);
-  let x = Math.random() * total;
-  for(const [t,v] of opts){ if((x -= v.w) <= 0) return t }
-  return opts[0][0];
-}
-/* Vælg dem, der har været mindst på i den rolle */
+/* Vælg dem, der har haft rollen færrest gange */
 function pickLeast(key, pool, k){
   const c = state.count[key] = state.count[key] || {};
-  const sorted = shuffle([...pool]).sort((a,b) => (c[a.id]||0) - (c[b.id]||0)).slice(0,k);
-  sorted.forEach(p => c[p.id] = (c[p.id]||0) + 1);
-  return sorted;
+  const chosen = shuffle([...pool]).sort((a,b) => (c[a.id]||0) - (c[b.id]||0)).slice(0,k);
+  chosen.forEach(p => c[p.id] = (c[p.id]||0) + 1);
+  return chosen;
 }
-function makeMath(){
-  const qs = [];
-  for(let i=0;i<3;i++){
-    let q, a; const k = rnd(3);
-    if(k === 0){ const x = 12+rnd(48), y = 12+rnd(48); q = `${x} + ${y}`; a = x+y }
-    else if(k === 1){ const x = 3+rnd(10), y = 3+rnd(10); q = `${x} × ${y}`; a = x*y }
-    else { const x = 40+rnd(60), y = 11+rnd(29); q = `${x} − ${y}`; a = x-y }
-    const opts = new Set([a]);
-    while(opts.size < 4){ const d = (1+rnd(10)) * (Math.random()<.5?-1:1); if(a+d > 0) opts.add(a+d) }
-    qs.push({q, a, opts: shuffle([...opts])});
+const others = (pool, id) => pool.filter(p => p.id !== id);
+
+function pickType(pool){
+  const last = state.round && state.round.type;
+  const opts = Object.entries(TYPES).filter(([t,T]) =>
+    state.enabled[t] !== false && t !== last && pool.length >= T.min && (!T.can || T.can(pool)));
+  if(!opts.length) return "chaos";
+  const total = opts.reduce((a,[,T]) => a + T.w, 0);
+  let x = Math.random() * total;
+  for(const [t,T] of opts){ if((x -= T.w) <= 0) return t }
+  return opts[0][0];
+}
+
+function flash(text){ state.flash = {id: ++state.fid, text} }
+
+/* Tår uden for en afsløring (fx en forkert gæt) — makkeren drikker med */
+function giveNow(id, s, why){
+  const list = withMate([{id, s}]);
+  list.forEach(d => { const p = player(d.id); if(p) p.sips += d.s });
+  const mate = list.find(d => d.mate);
+  flash(`${why} ${player(id)?.name || "?"} drikker ${tar(s)}${mate ? ` (og makker ${player(mate.id)?.name} med)` : ""}.`);
+}
+function withMate(list){
+  const b = state.buddy; if(!b) return list;
+  const out = [...list];
+  for(const d of list){
+    const m = d.id === b.a ? b.b : d.id === b.b ? b.a : null;
+    if(m && player(m) && !out.some(x => x.id === m)) out.push({id:m, s:d.s, mate:true});
   }
-  return qs;
+  return out;
 }
-const mark = name => "\u0001" + name + "\u0002";
+
+function expireMissions(){
+  const keep = [];
+  for(const m of state.missions){
+    if(state.n >= m.until){
+      const a = player(m.agent);
+      if(a){ giveNow(m.agent, S()*2, `Tiden er gået for ${gen(a.name)} hemmelige mission (kald ${player(m.target)?.name} for "${m.name}").`) }
+    } else keep.push(m);
+  }
+  state.missions = keep;
+}
 
 function startRound(){
-  const pool = state.players.filter(p => p.online);
-  const type = pickType(pool.length);
+  expireMissions();
+  if(state.event && Date.now() > state.event.end) state.event = null;
+  const pool = online();
+  const type = pickType(pool);
   const r = {type, n: ++state.n, answers:{}, reveal:null};
-  if(type === "duel"){
-    const [a,b] = pickLeast("duel", pool, 2);
-    let c = pickCard("duel", DUELS);
-    for(let i=0; i<6 && (a.id === myId || b.id === myId) && /værten/.test(c[1]); i++) c = pickCard("duel", DUELS);  // værten kan ikke dømme sin egen duel
-    r.a = a.id; r.b = b.id; r.text = c[1]; r.lvl = c[0];
-  }
-  if(type === "hot"){
-    r.target = pickLeast("hot", pool, 1)[0].id;
-    const t = pickCard("truth", TRUTHS), d = pickCard("dare", DARES);
-    r.truth = t[1]; r.tl = t[0]; r.dare = d[1]; r.dl = d[0]; r.pick = null;
-  }
-  if(type === "vote"){ const c = pickCard("vote", VOTES); r.text = c[1]; r.lvl = c[0] }
-  if(type === "reflex"){ r.delay = 1500 + rnd(4000); r.limit = 3000 + r.delay + 6000 }
-  if(type === "tap") r.limit = 3000 + 5000 + 5000;
-  if(type === "stopwatch") r.limit = 3000 + 12000 + 3000;
-  if(type === "math"){ r.qs = makeMath(); r.limit = 3000 + 45000 + 3000 }
   state.round = r;
-  if(type === "chaos"){ dealChaos(r); return }
+  const instant = TYPES[type].start(r, pool);
+  if(instant) return applyReveal(r, instant);
   state.phase = "round";
   commit();
   if(r.limit){ const n = r.n; setTimeout(() => { if(state && state.round && state.round.n===n && state.phase==="round") doReveal() }, r.limit) }
 }
 
-function dealChaos(r){
-  const S = sipsBase();
-  const card = pickCard("chaos", CHAOS);
-  r.lvl = card.l;
-  const pool = state.players.filter(p => p.online);
-  const p = pool[rnd(pool.length)];
-  const rest = pool.filter(x => x !== p);
-  const q = rest.length ? rest[rnd(rest.length)] : p;
-  let drinkers = [], pName = p.name;
-  if(card.who === "rand") drinkers = [p];
-  if(card.who === "pair") drinkers = q === p ? [p] : [p, q];
-  if(card.who === "all") drinkers = pool;
-  if(card.who === "least"){
-    const min = Math.min(...pool.map(x => x.sips));
-    drinkers = pool.filter(x => x.sips === min);
-    pName = drinkers.map(x => x.name).join(" og ");
-  }
-  r.text = card.t.replace(/\{p\}/g, mark(pName)).replace(/\{q\}/g, mark(q.name)).replace(/\{S\}/g, tar(S));
-  applyReveal(r, {drink: drinkers.map(x => ({id:x.id, s:S}))});
-}
-
-const SCORE_MAX = {reflex:99999, tap:150, stopwatch:60000, math:120000};
 function hostAct(pid, n, v){
   const r = state.round;
   if(!r || r.n !== n || state.phase !== "round") return;
   const T = TYPES[r.type];
-  if(r.type === "vote"){ if(!player(v)) return; r.answers[pid] = v }
-  else if(r.type === "duel"){
-    if(v === "lose" && (pid === r.a || pid === r.b)){ r.winner = pid === r.a ? "b" : "a"; return doReveal() }
-    if(v === "tie" && (pid === r.a || pid === r.b || pid === myId)){ r.winner = "tie"; return doReveal() }
-    if((v === "win:a" || v === "win:b") && pid === myId){ r.winner = v.slice(4); return doReveal() }
-    if((v === "a" || v === "b") && pid !== r.a && pid !== r.b) r.answers[pid] = v;
-    else return;
-  }
-  else if(r.type === "hot"){
-    if(pid !== r.target && pid !== myId) return;
-    if((v === "truth" || v === "dare") && !r.pick){ r.pick = v }
-    else if((v === "done" || v === "drank") && r.pick){ r.answers[r.target] = v; return doReveal() }
-    else return;
-  }
-  else if(T && T.game){
-    if(typeof v !== "number" || !isFinite(v) || r.answers[pid] !== undefined) return;
-    r.answers[pid] = (r.type === "reflex" && v < 0) ? -1 : Math.max(0, Math.min(Math.round(v), SCORE_MAX[r.type]));
-  }
-  else return;
-  commit(); checkAllIn();
+  const out = T.act ? T.act(r, pid, v) : false;
+  if(out === "reveal") return doReveal();
+  if(out){ commit(); checkAllIn() }
 }
 
 function checkAllIn(){
   const r = state && state.round;
-  if(!r || state.phase !== "round" || !(r.type === "vote" || TYPES[r.type].game)) return;
-  const need = state.players.filter(p => p.online).map(p => p.id);
-  if(need.length && need.every(id => r.answers[id] !== undefined)){
-    const n = r.n;
-    setTimeout(() => { if(state.round && state.round.n === n && state.phase === "round") doReveal() }, 900);
-  }
+  if(!r || state.phase !== "round") return;
+  const T = TYPES[r.type];
+  if(!T.done || !T.done(r)) return;
+  const n = r.n;
+  setTimeout(() => { if(state.round && state.round.n === n && state.phase === "round") doReveal() }, 900);
 }
 
 function doReveal(){
   const r = state.round; if(!r || state.phase !== "round") return;
-  const S = sipsBase(), A = r.answers;
-  const res = {drink:[], win:[]};
-  if(r.type === "vote"){
-    const tally = {}; Object.values(A).forEach(id => { if(player(id)) tally[id] = (tally[id] || 0) + 1 });
-    const max = Math.max(0, ...Object.values(tally));
-    res.tally = Object.entries(tally).sort((a,b) => b[1]-a[1]);
-    if(max > 0) res.drink = res.tally.filter(([,c]) => c === max).map(([id]) => ({id, s:S}));
-  }
-  if(r.type === "duel"){
-    const w = r.winner || "tie";
-    res.winner = w;
-    res.right = Object.keys(A).filter(id => w !== "tie" && A[id] === w);
-    res.wrong = Object.keys(A).filter(id => w !== "tie" && A[id] !== w);
-    if(w === "tie") res.drink = [{id:r.a, s:S}, {id:r.b, s:S}];
-    else {
-      const winner = w === "a" ? r.a : r.b, loser = w === "a" ? r.b : r.a;
-      res.drink = [{id:loser, s:S*2}, ...res.wrong.map(id => ({id, s:S}))];
-      res.win = [winner];
-    }
-  }
-  if(r.type === "hot"){
-    res.choice = A[r.target] || "drank";
-    if(res.choice === "drank") res.drink = [{id:r.target, s:S*2}];
-    else res.win = [r.target];
-  }
-  if(TYPES[r.type].game){
-    const lower = r.type !== "tap";
-    const early = Object.keys(A).filter(id => A[id] < 0);
-    const valid = Object.keys(A).filter(id => A[id] >= 0).sort((a,b) => lower ? A[a]-A[b] : A[b]-A[a]);
-    const asleep = state.players.filter(p => p.online && A[p.id] === undefined).map(p => p.id);
-    res.order = valid; res.early = early; res.asleep = asleep;
-    const losers = new Set([...early, ...asleep]);
-    if(valid.length >= 2){
-      const worst = A[valid[valid.length-1]];
-      valid.filter(id => A[id] === worst && A[id] !== A[valid[0]]).forEach(id => losers.add(id));
-    }
-    res.drink = [...losers].map(id => ({id, s:S}));
-    if(valid.length) res.win = [valid[0]];
-  }
-  applyReveal(r, res);
+  applyReveal(r, TYPES[r.type].reveal(r));
 }
 
 function applyReveal(r, res){
   res.win = res.win || [];
+  res.drink = withMate(res.drink || []);
   res.drink.forEach(d => { const p = player(d.id); if(p) p.sips += d.s });
   res.win.forEach(id => { const p = player(id); if(p) p.wins = (p.wins||0) + 1 });
+  if(res.buddy) state.buddy = res.buddy;   // nye makkere gælder først fra næste runde
   r.reveal = res; state.phase = "reveal";
   commit();
+}
+
+/* Handlinger uden for runden: missioner og regelbrud */
+function hostSide(pid, v){
+  if(v.k === "mission"){
+    const m = state.missions.find(x => x.id === v.id && x.agent === pid); if(!m) return;
+    state.missions = state.missions.filter(x => x !== m);
+    const a = player(m.agent), t = player(m.target);
+    if(v.ok){
+      if(a) a.wins = (a.wins||0) + 1;
+      giveNow(m.target, S()*2, `Hemmelig mission klaret! ${a?.name} fik kaldt ${t?.name} for "${m.name}" uden at blive opdaget.`);
+    } else giveNow(m.agent, S()*2, `${a?.name} blev afsløret i at kalde ${t?.name} for "${m.name}".`);
+    commit();
+  }
+  if(v.k === "broke"){
+    const ev = state.event, p = player(v.id);
+    if(!ev || Date.now() > ev.end || !p) return;
+    ev.calls = ev.calls || {};
+    if(Date.now() - (ev.calls[p.id] || 0) < 8000) return;   // samme person kan ikke straffes to gange på 8 sek
+    ev.calls[p.id] = Date.now();
+    giveNow(p.id, S(), `Regelbrud!`);
+    commit();
+  }
 }
 
 function hostCmd(cmd, arg){
@@ -666,40 +730,680 @@ function hostCmd(cmd, arg){
   if(cmd === "skip"){ state.round = null; startRound() }
   if(cmd === "level"){ state.intensity = +arg; commit() }
   if(cmd === "spice"){ state.spice = +arg; commit() }
-  if(cmd === "end"){ state.phase = "end"; state.round = null; commit() }
-  if(cmd === "again"){ state.players.forEach(p => { p.sips = 0; p.wins = 0 }); state.phase = "lobby"; state.round = null; state.n = 0; state.count = {}; commit() }
+  if(cmd === "toggle" && TYPES[arg]){
+    const on = Object.keys(TYPES).filter(t => state.enabled[t] !== false);
+    if(state.enabled[arg] !== false && on.length <= 1) return toast("Mindst ét spil skal være slået til.");
+    state.enabled[arg] = state.enabled[arg] === false; commit();
+  }
+  if(cmd === "end"){ state.phase = "end"; state.round = null; state.event = null; commit() }
+  if(cmd === "again"){ state.players.forEach(p => { p.sips = 0; p.wins = 0 }); Object.assign(state, {phase:"lobby", round:null, n:0, count:{}, buddy:null, missions:[], event:null}); commit() }
   if(cmd === "kick") removePlayer(arg);
-  if(cmd === "hostact") hostAct(myId, state.round.n, arg);
+  if(cmd === "hostact") hostAct(myId, state.round && state.round.n, arg);
   ui.menu = false; render();
 }
 
-function closeGame(){
-  if(role === "host"){
-    guests.forEach(g => { try{ g.conn.send({t:"closed"}) }catch(e){} });
-    store.del(SAVE_HOST);
-  } else if(hostConn && hostConn.open){
-    try{ hostConn.send({t:"leave"}) }catch(e){}
-    store.del(SAVE_LAST);
-  }
-  setTimeout(() => { teardown(); state = null; role = null; ui = {screen:"home", err:"", code:"", menu:false, online:true}; render() }, 250);
+/* ============================================================
+   SPILTYPER
+   Hver type: start (vært), act (vært), done, reveal (vært), view og result (alle)
+   ============================================================ */
+const nameOf = id => { const p = player(id); return p ? esc(p.name) : "?" };
+const avatar = p => !p ? "" : okPhoto(p.photo) ? `<img class="av" src="${p.photo}" alt="">` : avatar(p);
+const emojiOf = id => avatar(player(id));
+const who = id => `${emojiOf(id)} ${nameOf(id)}`;
+const chili = l => l >= 2 ? `<span class="chili" aria-label="krydderi ${l}">${"🌶️".repeat(l)}</span>` : "";
+const isHost = () => role === "host";
+const card = (color, kind, body, extra) => `<article class="card ${color}"><div class="kind"><span>${kind}</span>${extra||""}</div>${body}</article>`;
+const judge = (title, btns) => isHost() ? `<div class="judge"><div class="label">${title}</div><div class="row">${btns.map(([v,t]) => `<button class="btn small" data-a="hostact" data-v="${esc(v)}">${t}</button>`).join("")}</div></div>` : "";
+const actj = obj => `data-actj="${esc(JSON.stringify(obj))}"`;
+const sidej = obj => `data-side="${esc(JSON.stringify(obj))}"`;
+function progress(ids, isDone){
+  const list = ids.map(player).filter(Boolean);
+  const n = list.filter(p => isDone(p.id)).length;
+  return `<div class="label">${n} af ${list.length} er færdige</div>
+    <div class="progress">${list.map(p => `<span class="dot ${isDone(p.id)?"ok":""}"><span class="e">${avatar(p)}</span>${esc(p.name)}</span>`).join("")}</div>`;
+}
+function tallyVotes(A){
+  const tally = {}; Object.values(A).forEach(id => { if(player(id)) tally[id] = (tally[id]||0) + 1 });
+  return Object.entries(tally).sort((a,b) => b[1]-a[1]);
+}
+function tallyView(tally){
+  const total = tally.reduce((a,[,c]) => a + c, 0) || 1;
+  return `<div class="label">Stemmer</div><div class="result">${tally.map(([id,c]) => `<div class="res"><span class="e">${emojiOf(id)}</span><span class="n">${nameOf(id)}<div class="bar"><i style="width:${Math.round(c/total*100)}%"></i></div></span><span class="v">${c}</span></div>`).join("")}</div>`;
+}
+function voteButtons(ids, mine){
+  return `<div class="voters">${ids.map(id => `<button class="choice" data-act="${esc(id)}" aria-pressed="${mine===id}"><span class="em">${emojiOf(id)}</span>${nameOf(id)}</button>`).join("")}</div>`;
+}
+const onlineIds = () => online().map(p => p.id);
+function countdown(startHost, dur){
+  const until = L(startHost) + dur;
+  return `<div class="timer" style="font-size:40px;text-align:center" data-until="${until}">${fmtLeft(Math.max(0, until - Date.now()))}</div>
+    <div class="tbar"><i data-bar="${until}" data-dur="${dur}" style="width:100%"></i></div>`;
 }
 
-function teardown(){
-  clearTimeout(guestTimer); guestTimer = null;
-  guests.forEach(g => { try{ g.conn.close() }catch(e){} }); guests.clear();
-  if(hostConn) try{ hostConn.close() }catch(e){}
-  hostConn = null;
-  if(peer) try{ peer.destroy() }catch(e){}
-  peer = null; everConnected = false; connecting = false;
-  clearMg(); mg = {n:-1};
+/* ---- minispil (lokal tidtagning på hver telefon) ---- */
+function gameReveal(r, lower, perPlayer){
+  const A = r.answers;
+  const early = Object.keys(A).filter(id => A[id] < 0);
+  const valid = Object.keys(A).filter(id => A[id] >= 0).sort((a,b) => lower ? A[a]-A[b] : A[b]-A[a]);
+  const asleep = onlineIds().filter(id => A[id] === undefined);
+  const sips = {};
+  const add = (id, s) => sips[id] = (sips[id]||0) + s;
+  early.forEach(id => add(id, S())); asleep.forEach(id => add(id, S()));
+  if(valid.length >= 2){
+    const worst = A[valid[valid.length-1]];
+    if(worst !== A[valid[0]]) valid.filter(id => A[id] === worst).forEach(id => add(id, S()));
+  }
+  if(perPlayer) valid.forEach(id => { const s = perPlayer(A[id]); if(s) add(id, s) });
+  return {order:valid, early, asleep, drink:Object.entries(sips).map(([id,s]) => ({id, s})), win: valid.length ? [valid[0]] : []};
 }
+function gameResult(r, res, color, extra){
+  const A = r.answers, best = res.win[0], T = TYPES[r.type];
+  return card(color, T.name, `<h2 class="prompt">${best ? `${nameOf(best)} vandt!` : "Ingen gennemførte"}</h2>
+      ${best ? `<div class="who">${fmtScore(r, A[best])}${extra ? " · " + extra(A[best]) : ""}</div>` : ""}`) +
+    `<div class="label">Resultater</div><div class="result">${[
+      ...res.order.map((id,i) => `<div class="res ${i===0?"win":""}"><span class="e">${emojiOf(id)}</span><span class="n">${i+1}. ${nameOf(id)}</span><span class="v">${fmtScore(r, A[id])}</span></div>`),
+      ...res.early.map(id => `<div class="res"><span class="e">${emojiOf(id)}</span><span class="n">${nameOf(id)}</span><span class="v">For tidligt</span></div>`),
+      ...res.asleep.map(id => `<div class="res"><span class="e">${emojiOf(id)}</span><span class="n">${nameOf(id)}</span><span class="v">Sov</span></div>`)
+    ].join("")}</div>`;
+}
+function fmtScore(r, v){
+  if(r.type === "reflex") return v < 0 ? "For tidligt" : v + " ms";
+  if(r.type === "tap") return v + " tryk";
+  if(r.type === "stop") return v >= 9999 ? "Nåede ikke" : "±" + dk(v/1000,2) + " s";
+  return v;
+}
+const gameAct = max => (r, pid, v) => {
+  if(typeof v !== "number" || !isFinite(v) || r.answers[pid] !== undefined) return false;
+  r.answers[pid] = (r.type === "reflex" && v < 0) ? -1 : Math.max(0, Math.min(Math.round(v), max));
+  return true;
+};
+const allOnlineAnswered = r => { const ids = onlineIds(); return ids.length > 0 && ids.every(id => r.answers[id] !== undefined) };
+
+const TYPES = {
+  /* ---------- Idé 1: Tryk på stop ---------- */
+  stop:{
+    name:"Tryk på stop", desc:"Stop uret på præcis tid", w:1.2, min:1,
+    start(r){ r.target = 300 + rnd(500); r.target *= 10; r.limit = 3000 + r.target + 6000 },
+    act: gameAct(9999), done: allOnlineAnswered,
+    reveal: r => gameReveal(r, true, v => v > 1000 ? S() : 0),
+    result: (r,res) => gameResult(r, res, "teal", v => v <= 100 ? `perfekt! Del ${tar(S()*2)} ud` : `må dele ${tar(S())} ud`)
+  },
+
+  /* ---------- Idé 2: Kald en person ved et forkert navn ---------- */
+  mission:{
+    name:"Hemmelig mission", desc:"Kald en ved et forkert navn", w:1, min:2,
+    can: pool => state.missions.length < 2 && pool.some(p => !state.missions.some(m => m.agent === p.id)),
+    start(r, pool){
+      const free = pool.filter(p => !state.missions.some(m => m.agent === p.id));
+      const agent = pickLeast("mission", free, 1)[0];
+      const target = pick(others(pool, agent.id));
+      const m = {id:r.n, agent:agent.id, target:target.id, name:pick(FAKE_NAMES), until:state.n + 4};
+      state.missions.push(m);
+      Object.assign(r, {agent:m.agent, target:m.target, fake:m.name, until:m.until});
+      return {drink:[]};
+    },
+    result(r){
+      if(r.agent === myId) return card("secret", "Hemmelig mission 🤫", `<h2 class="prompt sm">Kald ${who(r.target)} for "${esc(r.fake)}".</h2>
+        <p>Gør det naturligt i en samtale uden at blive afsløret. Du har til og med runde ${r.until}. Tryk på missionen øverst, når du har klaret den, eller hvis nogen opdager dig.</p>`);
+      return card("secret", "Hemmelig mission 🤫", `<h2 class="prompt sm">Psst… én af jer har lige fået en hemmelig mission.</h2><p>Hold ørerne åbne. Tænk over, hvad folk kalder hinanden.</p>`);
+    }
+  },
+
+  /* ---------- Idé 3: Gæt personen ---------- */
+  present:{
+    name:"Gæt personen", desc:"30 sek. oplæg om en ved bordet", w:1.2, min:3,
+    start(r, pool){ const p = pickLeast("present", pool, 1)[0]; r.presenter = p.id; r.subject = pick(others(pool, p.id)).id; r.started = null },
+    voters: r => onlineIds().filter(id => id !== r.presenter),
+    act(r, pid, v){
+      if(v === "start" && (pid === r.presenter || pid === myId) && !r.started){ r.started = Date.now(); return true }
+      if(pid !== r.presenter && player(v) && v !== r.presenter){ r.answers[pid] = v; return true }
+      return false;
+    },
+    opt: v => typeof v === "string" && v !== "start",
+    done: r => { const ids = TYPES.present.voters(r); return ids.length > 0 && ids.every(id => r.answers[id]) },
+    reveal(r){
+      const A = r.answers, right = Object.keys(A).filter(id => A[id] === r.subject), wrong = Object.keys(A).filter(id => A[id] !== r.subject);
+      const drink = wrong.map(id => ({id, s:S()}));
+      if(!right.length) drink.push({id:r.presenter, s:S()*2});
+      return {right, wrong, tally:tallyVotes(A), drink, win: right.length > wrong.length ? [r.presenter] : []};
+    },
+    view(r){
+      const amP = r.presenter === myId;
+      if(amP) return card("violet", "Gæt personen", `<div class="who">Dit hemmelige emne:</div><h2 class="prompt">${who(r.subject)}</h2>
+          <p>Hold et oplæg på 30 sekunder om personen uden at sige navnet. De andre gætter i appen. Gætter ingen rigtigt, drikker du ${tar(S()*2)}.</p>`) +
+        (r.started ? countdown(r.started, 30000) : `<button class="btn primary" data-act="start">Start 30 sekunder</button>`) +
+        progress(TYPES.present.voters(r), id => r.answers[id]);
+      return card("violet", "Gæt personen", `<div class="who">${who(r.presenter)} holder oplæg om én ved bordet.</div><h2 class="prompt">Hvem handler det om?</h2>`) +
+        (r.started ? countdown(r.started, 30000) : `<p class="waiting">Venter på, at ${nameOf(r.presenter)} starter uret…</p>`) +
+        `<div class="label">Dit gæt · forkert gæt koster ${tar(S())}</div>` +
+        voteButtons(onlineIds().filter(id => id !== r.presenter), r.answers[myId]) +
+        (isHost() && !r.started ? `<button class="btn small ghost" data-a="hostact" data-v="start">Start uret for ${nameOf(r.presenter)}</button>` : "");
+    },
+    result(r, res){
+      return card("violet", "Gæt personen", `<div class="who">${nameOf(r.presenter)} talte om:</div><h2 class="prompt">${who(r.subject)}</h2>
+          ${res.win.length ? `<p>Flertallet gættede rigtigt. +1 🏆 til ${nameOf(r.presenter)}.</p>` : res.right.length ? "" : `<p>Ingen gættede rigtigt!</p>`}`) +
+        tallyView(res.tally);
+    }
+  },
+
+  /* ---------- Idé 4: Tre komplimenter ---------- */
+  compliments:{
+    name:"Tre komplimenter", desc:"Personlige og kreative", w:1, min:2,
+    start(r, pool){ const g = pickLeast("compliments", pool, 1)[0]; r.giver = g.id; r.receiver = pick(others(pool, g.id)).id },
+    act(r, pid, v){
+      if((v === "ok" || v === "no") && (pid === r.receiver || pid === myId)){ r.verdict = v; return "reveal" }
+      if(v === "drank" && (pid === r.giver || pid === myId)){ r.verdict = "drank"; return "reveal" }
+      return false;
+    },
+    reveal(r){
+      if(r.verdict === "ok") return {drink:[{id:r.giver, s:1}, {id:r.receiver, s:1}], win:[r.giver]};
+      return {drink:[{id:r.giver, s:S()*2}]};
+    },
+    view(r){
+      const flirt = state.spice > 1 ? " Mindst ét skal være flirtende." : "";
+      const body = card("pink", "Tre komplimenter", `<div class="who">${who(r.giver)} → ${who(r.receiver)}</div>
+        <h2 class="prompt sm">${r.giver === myId ? `Giv ${nameOf(r.receiver)} tre komplimenter.` : `${nameOf(r.giver)} giver ${r.receiver === myId ? "dig" : nameOf(r.receiver)} tre komplimenter.`}</h2>
+        <p>De skal være forskellige og gerne personlige eller kreative.${flirt} Godkender ${nameOf(r.receiver)} dem, skåler I sammen. Ellers drikker ${nameOf(r.giver)} ${tar(S()*2)}.</p>`);
+      if(r.receiver === myId) return body + `<div class="label">Var de gode nok?</div><div class="choices two">
+          <button class="choice tall" data-act="ok"><span class="em">🥹</span>Godkendt</button>
+          <button class="choice tall" data-act="no"><span class="em">🙄</span>For dårlige</button></div>`;
+      if(r.giver === myId) return body + `<button class="btn" data-act="drank">Drik ${tar(S()*2)} i stedet</button>`;
+      return body + `<p class="waiting">${nameOf(r.receiver)} bedømmer…</p>` + judge("Dommer", [["ok","Godkendt"],["no","Underkendt"]]);
+    },
+    result(r){
+      return card("pink", "Tre komplimenter", `<div class="who">${who(r.giver)} → ${who(r.receiver)}</div>
+        <h2 class="prompt">${r.verdict === "ok" ? "Godkendt! Skål sammen 🥂" : r.verdict === "no" ? "Underkendt!" : `${nameOf(r.giver)} drak i stedet`}</h2>`);
+    }
+  },
+
+  /* ---------- Idé 5: Marry, Fuck, Kill ---------- */
+  mfk:{
+    name:"Marry, Fuck, Kill", desc:"Gift med én bliver makkere", w:1.2, min:2,
+    start(r, pool){
+      const c = pickLeast("mfk", pool, 1)[0]; r.chooser = c.id;
+      const rest = others(pool, c.id);
+      if(rest.length >= 3){ r.real = true; r.opts = shuffle(rest.map(p => p.id)).slice(0,3) }
+      else { r.real = false; r.opts = shuffle([...FICTIONAL]).slice(0,3) }
+      r.labels = state.spice > 1 ? ["Marry","Fuck","Kill"] : ["Marry","Kiss","Kill"];
+    },
+    optName: (r, i) => r.real ? who(r.opts[i]) : esc(r.opts[i]),
+    act(r, pid, v){
+      if(pid === r.chooser && isObj(v)){
+        const s = [v.m, v.f, v.k];
+        if(!s.every(x => Number.isInteger(x) && x >= 0 && x < 3) || new Set(s).size !== 3) return false;
+        r.pick = {m:v.m, f:v.f, k:v.k}; return "reveal";
+      }
+      if(pid !== r.chooser && /^k[012]$/.test(v)){ r.answers[pid] = v; return true }
+      return false;
+    },
+    opt: v => typeof v === "string",
+    reveal(r){
+      const A = r.answers, drink = [];
+      Object.keys(A).forEach(id => { if(A[id] !== "k" + r.pick.k) drink.push({id, s:S()}) });
+      if(r.real){
+        drink.push({id:r.opts[r.pick.k], s:S()*2});
+        drink.push({id:r.chooser, s:S()}, {id:r.opts[r.pick.f], s:S()});
+      }
+      return {drink, buddy: r.real ? {a:r.chooser, b:r.opts[r.pick.m]} : null};
+    },
+    view(r){
+      const [M,F,K] = r.labels;
+      if(r.chooser === myId){
+        if(mfkSel.n !== r.n) mfkSel = {n:r.n, m:null, f:null, k:null};
+        const ready = [mfkSel.m, mfkSel.f, mfkSel.k].every(x => x !== null);
+        return card("red", "Marry, Fuck, Kill", `<h2 class="prompt sm">Hvem vil du ${M.toLowerCase()}, ${F.toLowerCase()} og ${K.toLowerCase()}?</h2>
+            <p>${r.real ? `<b>${K}:</b> drikker ${tar(S()*2)}. <b>${F}:</b> I skåler og drikker ${tar(S())} hver. <b>${M}:</b> bliver din drukmakker.` : "Der er for få spillere ved bordet, så du vælger mellem kendte figurer."}</p>`) +
+          `<div class="mfk">${r.opts.map((_,i) => `<div class="mfkrow"><span class="nm">${TYPES.mfk.optName(r,i)}</span><div class="mfkbtns">
+            ${[["m",M],["f",F],["k",K]].map(([k,t]) => `<button data-mfk="${k}:${i}" aria-pressed="${mfkSel[k]===i}">${t}</button>`).join("")}</div></div>`).join("")}</div>
+          <button class="btn primary" data-a="mfksend" ${ready?"":"disabled"}>Afslør mine valg</button>`;
+      }
+      const mine = r.answers[myId];
+      return card("red", "Marry, Fuck, Kill", `<div class="who">${who(r.chooser)} vælger mellem:</div>
+          <h2 class="prompt sm">${r.opts.map((_,i) => TYPES.mfk.optName(r,i)).join(", ")}</h2>`) +
+        `<div class="label">Gæt hvem ${nameOf(r.chooser)} vælger at ${K.toLowerCase()} · forkert gæt koster ${tar(S())}</div>
+        <div class="choices">${r.opts.map((_,i) => `<button class="choice" data-act="k${i}" aria-pressed="${mine==="k"+i}">${TYPES.mfk.optName(r,i)}</button>`).join("")}</div>`;
+    },
+    result(r){
+      const [M,F,K] = r.labels;
+      return card("red", "Marry, Fuck, Kill", `<div class="who">${who(r.chooser)} valgte:</div>
+        <p style="font-size:19px">💍 <b>${M}:</b> ${TYPES.mfk.optName(r,r.pick.m)}<br>🔥 <b>${F}:</b> ${TYPES.mfk.optName(r,r.pick.f)}<br>🔪 <b>${K}:</b> ${TYPES.mfk.optName(r,r.pick.k)}</p>
+        ${r.real ? `<p>${nameOf(r.chooser)} og ${nameOf(r.opts[r.pick.m])} er nu drukmakkere 🤝</p>` : ""}`);
+    }
+  },
+
+  /* ---------- Idé 6: Find fem ting til fælles ---------- */
+  common:{
+    name:"Fem ting til fælles", desc:"30 sek. med en makker", w:1, min:2,
+    start(r, pool){ r.chooser = pickLeast("common", pool, 1)[0].id; r.partner = null; r.found = 0; r.started = null },
+    act(r, pid, v){
+      const inTeam = pid === r.chooser || pid === r.partner || pid === myId;
+      if(isObj(v) && pid === r.chooser && !r.partner && player(v.partner) && v.partner !== pid){ r.partner = v.partner; return true }
+      if(v === "start" && r.partner && inTeam && !r.started){
+        r.started = Date.now(); const n = r.n;
+        setTimeout(() => { if(state.round && state.round.n === n && state.phase === "round") doReveal() }, 31000);
+        return true;
+      }
+      if(v === "plus" && r.started && inTeam){ r.found = Math.min(5, r.found + 1); return r.found >= 5 ? "reveal" : true }
+      return false;
+    },
+    reveal(r){
+      if(!r.partner) return {drink:[{id:r.chooser, s:S()}]};
+      const miss = 5 - r.found;
+      return miss ? {drink:[{id:r.chooser, s:miss}, {id:r.partner, s:miss}]} : {win:[r.chooser, r.partner], drink:[]};
+    },
+    view(r){
+      const team = r.chooser === myId || r.partner === myId;
+      if(!r.partner){
+        if(r.chooser === myId) return card("sky", "Fem ting til fælles", `<h2 class="prompt sm">Vælg en makker</h2><p>I får 30 sekunder til at finde fem ting, I har til fælles.</p>`) +
+          `<div class="voters">${online().filter(p => p.id !== myId).map(p => `<button class="choice" ${actj({partner:p.id})}><span class="em">${avatar(p)}</span>${esc(p.name)}</button>`).join("")}</div>`;
+        return card("sky", "Fem ting til fælles", `<h2 class="prompt sm">${who(r.chooser)} vælger en makker…</h2>`);
+      }
+      return card("sky", "Fem ting til fælles", `<div class="who">${who(r.chooser)} & ${who(r.partner)}</div>
+          <h2 class="prompt sm">Find fem ting, I har til fælles.</h2>
+          <p>Det skal være rigtige fællestræk, ikke "vi har begge to ører". Hver ting, I mangler, koster jer begge 1 tår.</p>`) +
+        `<div class="counter">${r.found}/5</div>` +
+        (r.started ? countdown(r.started, 30000) + (team || isHost() ? `<button class="btn primary" data-act="plus">+1 fælles ting</button>` : "")
+          : (team || isHost() ? `<button class="btn primary" data-act="start">Start 30 sekunder</button>` : `<p class="waiting">Venter på, at de starter…</p>`));
+    },
+    result(r, res){
+      return card("sky", "Fem ting til fælles", `<div class="who">${who(r.chooser)} & ${r.partner ? who(r.partner) : "?"}</div>
+        <h2 class="prompt">${r.found >= 5 ? "Alle fem! Sjælevenner 🏆" : `${r.found} af 5`}</h2>`);
+    }
+  },
+
+  /* ---------- Idé 7: Drukmakker ---------- */
+  buddy:{
+    name:"Drukmakker", desc:"To drikker altid sammen", w:0.7, min:2,
+    start(r, pool){
+      let pair, tries = 0;
+      do { pair = shuffle([...pool]).slice(0,2) } while(tries++ < 10 && state.buddy && pool.length > 2 &&
+        [state.buddy.a, state.buddy.b].includes(pair[0].id) && [state.buddy.a, state.buddy.b].includes(pair[1].id));
+      r.a = pair[0].id; r.b = pair[1].id; r.prev = state.buddy;
+      state.buddy = {a:r.a, b:r.b};
+      return {drink:[{id:r.a, s:1}, {id:r.b, s:1}]};
+    },
+    result(r){
+      return card("amber", r.prev ? "Makkerskifte!" : "Drukmakkere", `<div class="vs"><div class="side"><div class="e">${emojiOf(r.a)}</div><div class="nm">${nameOf(r.a)}</div></div><div class="x">🤝</div><div class="side"><div class="e">${emojiOf(r.b)}</div><div class="nm">${nameOf(r.b)}</div></div></div>
+        <p>Skål sammen nu! Hver gang den ene drikker, drikker den anden med, indtil næste makkerskifte.</p>`);
+    }
+  },
+
+  /* ---------- Idé 8: Tilfældige hændelser ---------- */
+  event:{
+    name:"Tilfældig hændelse", desc:"Regel med timer for alle", w:0.9, min:2,
+    can: () => !state.event || Date.now() > state.event.end,
+    start(r, pool){
+      const e = pickCard("event", EVENTS);
+      const p = pick(pool).name;
+      const text = e.t.replace(/\{p\}/g, p).replace(/\{P\}/g, gen(p)).replace(/\{w\}/g, pick(EVENT_WORDS));
+      state.event = {id:r.n, text, end:Date.now() + e.d*1000, dur:e.d*1000, calls:{}};
+      r.text = text; r.dur = e.d; r.lvl = e.l;
+      return {drink:[]};
+    },
+    result(r){
+      return card("amber", "Tilfældig hændelse", `<h2 class="prompt">${esc(r.text)}</h2>
+        <p>Gælder i ${r.dur} sekunder for alle. Bryder nogen reglen, så tryk "Nogen brød reglen" i det gule banner. De drikker ${tar(S())}.</p>`, chili(r.lvl));
+    }
+  },
+
+  /* ---------- Idé 9: Saml sætningen ---------- */
+  sentence:{
+    name:"Saml sætningen", desc:"Hvert sit hemmelige ord", w:0.9, min:2,
+    start(r, pool){
+      const c = pickCard("sentence", SENTENCES); r.sentence = c[1]; r.lvl = c[0];
+      const words = r.sentence.split(" "), ids = shuffle(pool.map(p => p.id));
+      r.words = {}; ids.forEach(id => r.words[id] = []);
+      words.forEach((w,i) => r.words[ids[i % ids.length]].push(w));
+      Object.values(r.words).forEach(shuffle);
+      r.count = words.length; r.wrong = {};
+    },
+    act(r, pid, v){
+      if(v === "giveup" && pid === myId){ r.giveup = true; return "reveal" }
+      if(!isObj(v) || typeof v.guess !== "string") return false;
+      if(norm(v.guess) === norm(r.sentence)){ r.solvedBy = pid; return "reveal" }
+      r.wrong[pid] = (r.wrong[pid]||0) + 1;
+      giveNow(pid, 1, `Forkert sætning: "${clean(v.guess,80)}".`);
+      return true;
+    },
+    reveal(r){
+      if(r.solvedBy) return {win:[r.solvedBy], drink:[]};
+      return {drink:onlineIds().map(id => ({id, s:S()}))};
+    },
+    view(r){
+      const mine = r.words[myId] || [];
+      const wrongs = Object.values(r.wrong).reduce((a,b) => a+b, 0);
+      return card("sky", "Saml sætningen", `<h2 class="prompt sm">Sætningen har ${r.count} ord. Hver af jer har en del af den.</h2>
+          <p>Giv hinanden ledetråde, men sig ikke jeres ord direkte. Når I tror, I har den, skriver én den ind. Hvert forkert gæt koster gætteren 1 tår.</p>`, chili(r.lvl)) +
+        `<div class="label">${mine.length ? "Dine hemmelige ord" : "Dine ord"}</div>` +
+        (mine.length ? `<div class="words">${mine.map(w => `<span class="word">${esc(w)}</span>`).join("")}</div>` : `<p class="hint">Du har intet ord. Du er detektiv: hjælp de andre med at samle sætningen.</p>`) +
+        `<input class="field" id="sent-${r.n}" autocomplete="off" placeholder="Skriv hele sætningen" maxlength="120">
+        <button class="btn primary" data-a="sentsend">Lås op</button>
+        ${wrongs ? `<p class="hint">Forkerte gæt indtil nu: ${wrongs}</p>` : ""}
+        ${isHost() ? `<button class="btn small ghost" data-a="hostact" data-v="giveup">Giv op (alle drikker ${tar(S())})</button>` : ""}`;
+    },
+    result(r){
+      return card("sky", "Saml sætningen", `<div class="who">${r.solvedBy ? `${who(r.solvedBy)} låste den op!` : "I gav op"}</div><h2 class="prompt">"${esc(r.sentence)}"</h2>`, chili(r.lvl));
+    }
+  },
+
+  /* ---------- Idé 10: Find impostoren ---------- */
+  impostor:{
+    name:"Find impostoren", desc:"Én har et andet ord", w:1.2, min:3,
+    start(r, pool){
+      const c = pickCard("impostor", IMPOSTOR); r.cat = c[1]; r.crew = c[2]; r.fake = c[3]; r.lvl = c[0];
+      r.impostor = pick(pool).id; r.players = pool.map(p => p.id);
+    },
+    act(r, pid, v){ if(player(v) && v !== pid && r.players.includes(pid)){ r.answers[pid] = v; return true } return false },
+    opt: () => true,
+    done: r => { const ids = onlineIds().filter(id => r.players.includes(id)); return ids.length > 0 && ids.every(id => r.answers[id]) },
+    reveal(r){
+      const tally = tallyVotes(r.answers);
+      const top = tally[0], caught = top && top[0] === r.impostor && (!tally[1] || tally[1][1] < top[1]);
+      if(caught) return {caught, tally, drink:[{id:r.impostor, s:S()*2}, ...Object.keys(r.answers).filter(id => r.answers[id] !== r.impostor && id !== r.impostor).map(id => ({id, s:S()}))]};
+      return {caught, tally, win:[r.impostor], drink:r.players.filter(id => id !== r.impostor && player(id)).map(id => ({id, s:S()}))};
+    },
+    view(r){
+      if(!r.players.includes(myId)) return card("violet", "Find impostoren", `<h2 class="prompt sm">Du kom med midt i runden. Se med, og stem næste gang.</h2>`);
+      const word = r.impostor === myId ? r.fake : r.crew;
+      if(peek.n !== r.n) peek = {n:r.n, on:false};
+      return card("violet", "Find impostoren", `<h2 class="prompt sm">Alle har fået et ord. Én af jer har et lidt andet ord.</h2>
+          <p>Beskriv på skift jeres ord uden at sige det. Stem så på, hvem I tror er impostoren. Bliver impostoren fanget, drikker de ${tar(S()*2)}. Ellers drikker alle andre ${tar(S())}.</p>`, chili(r.lvl)) +
+        `<button class="peek" data-a="peek">${peek.on ? `<span><span class="label">Dit ord</span><br><span class="w">${esc(word)}</span></span>` : `<span class="hint">Tryk for at se dit ord<br>(skjul det for sidemanden)</span>`}</button>
+        <div class="label">Hvem er impostoren?</div>` +
+        voteButtons(r.players.filter(id => id !== myId && player(id)), r.answers[myId]) +
+        progress(onlineIds().filter(id => r.players.includes(id)), id => r.answers[id]);
+    },
+    result(r, res){
+      return card("violet", "Find impostoren", `<div class="who">Impostoren var ${who(r.impostor)}</div>
+          <h2 class="prompt">${res.caught ? "Fanget! 🕵️" : "Slap væk! 😈"}</h2>
+          <p>Holdets ord: <b>${esc(r.crew)}</b> · Impostorens ord: <b>${esc(r.fake)}</b></p>`, chili(r.lvl)) + tallyView(res.tally);
+    }
+  },
+
+  /* ---------- Idé 11: Gæt bogstavet ---------- */
+  letters:{
+    name:"Gæt bogstavet", desc:"Afslør den hemmelige sætning", w:0.9, min:2,
+    start(r, pool){
+      const c = pickCard("letters", PHRASES); r.phrase = c[1]; r.lvl = c[0];
+      r.order = shuffle(pool.map(p => p.id)); r.turn = 0; r.used = []; r.winner = null;
+    },
+    cur: r => r.order[r.turn],
+    next(r){ for(let i=1;i<=r.order.length;i++){ const j = (r.turn+i) % r.order.length; if(player(r.order[j])?.online){ r.turn = j; return } } },
+    act(r, pid, v){
+      const T = TYPES.letters;
+      if(v === "skipturn" && pid === myId && !r.winner){ T.next(r); return true }
+      if(r.winner){
+        if(pid === r.winner && isObj(v) && player(v.victim) && v.victim !== pid){ r.victim = v.victim; return "reveal" }
+        return false;
+      }
+      if(pid !== T.cur(r) || !isObj(v)) return false;
+      if(typeof v.l === "string" && ABC.includes(v.l) && !r.used.includes(v.l)){
+        r.used.push(v.l);
+        if(r.phrase.includes(v.l)){
+          if([...r.phrase].every(ch => !ABC.includes(ch) || r.used.includes(ch))) r.winner = pid;
+        } else { giveNow(pid, 1, `Intet ${v.l}!`); T.next(r) }
+        return true;
+      }
+      if(typeof v.full === "string"){
+        if(norm(v.full) === norm(r.phrase)){ r.winner = pid; r.solvedFull = true; return true }
+        giveNow(pid, S(), `Forkert gæt på hele sætningen.`); T.next(r); return true;
+      }
+      return false;
+    },
+    reveal(r){ return r.victim ? {win:[r.winner], drink:[{id:r.victim, s:S()*2}]} : {drink:[]} },
+    board(r, all){
+      return `<div class="board-letters">${r.phrase.split(" ").map(w => `<div class="lw">${[...w].map(ch => {
+        const show = all || !ABC.includes(ch) || r.used.includes(ch);
+        return `<span class="lc">${show ? esc(ch) : ""}</span>`}).join("")}</div>`).join("")}</div>`;
+    },
+    view(r){
+      const T = TYPES.letters, cur = T.cur(r);
+      let body = card("violet", "Gæt bogstavet", T.board(r, !!r.winner), chili(r.lvl));
+      if(r.winner){
+        if(r.winner === myId) return body + `<div class="drinkhead">Du løste den!</div><div class="label">Giv ${tar(S()*2)} til…</div>
+          <div class="voters">${online().filter(p => p.id !== myId).map(p => `<button class="choice" ${actj({victim:p.id})}><span class="em">${avatar(p)}</span>${esc(p.name)}</button>`).join("")}</div>
+          <p class="hint">Eller find på en alkoholfri straf til dem i stedet.</p>`;
+        return body + `<p class="waiting">${nameOf(r.winner)} løste den og vælger, hvem der skal straffes…</p>`;
+      }
+      body += `<div class="label">Brugt: ${r.used.join(" ") || "ingen endnu"}</div>`;
+      if(cur === myId) return body + `<div class="drinkhead" style="font-size:24px">Din tur! Forkert bogstav koster 1 tår.</div>
+          <div class="abc">${ABC.map(ch => `<button ${actj({l:ch})} ${r.used.includes(ch)?"disabled":""}>${ch}</button>`).join("")}</div>
+          <div class="row"><input class="field" id="full-${r.n}" autocomplete="off" placeholder="Gæt hele sætningen" maxlength="80"><button class="btn small" data-a="fullsend" style="flex:0 0 auto;width:auto">Gæt</button></div>
+          <p class="hint">Gætter du forkert på hele sætningen, drikker du ${tar(S())}.</p>`;
+      return body + `<p class="waiting">${who(cur)} gætter…</p>` +
+        (isHost() ? `<button class="btn small ghost" data-a="hostact" data-v="skipturn">Spring ${gen(nameOf(cur))} tur over</button>` : "");
+    },
+    result(r){
+      return card("violet", "Gæt bogstavet", TYPES.letters.board(r, true) + `<p>${who(r.winner)} løste den${r.solvedFull ? " i ét gæt" : ""} og gav ${tar(S()*2)} til ${nameOf(r.victim)}.</p>`, chili(r.lvl));
+    }
+  },
+
+  /* ---------- Idé 12: Timingkæden ---------- */
+  chain:{
+    name:"Timingkæden", desc:"Samarbejd i den rigtige rækkefølge", w:0.8, min:2,
+    start(r, pool){
+      let order = shuffle(pool.map(p => p.id));
+      if(order.length < 4) order = order.concat(shuffle([...order]));
+      r.order = order; r.acts = order.map(() => pick(CHAIN_ACTIONS)); r.step = 0; r.started = null; r.fail = null;
+    },
+    timer(r){
+      const n = r.n, step = r.step;
+      setTimeout(() => {
+        const q = state.round;
+        if(q && q.n === n && state.phase === "round" && q.step === step && !q.fail){ q.fail = {id:q.order[step], why:"for langsom"}; doReveal() }
+      }, step === 0 ? 6000 : 3500);
+    },
+    act(r, pid, v){
+      if(v === "start" && pid === myId && !r.started){ r.started = Date.now(); TYPES.chain.timer(r); return true }
+      if(v !== "tap" || !r.started || r.fail) return false;
+      if(pid !== r.order[r.step]){ r.fail = {id:pid, why:"trykkede uden for tur"}; return "reveal" }
+      r.step++;
+      if(r.step >= r.order.length) return "reveal";
+      TYPES.chain.timer(r); return true;
+    },
+    reveal(r){
+      if(!r.fail && r.step >= r.order.length) return {drink:[]};
+      if(!r.fail) r.fail = {id:r.order[r.step], why:"nåede ikke"};
+      return {drink:[{id:r.fail.id, s:S()}, ...onlineIds().filter(id => id !== r.fail.id).map(id => ({id, s:1}))]};
+    },
+    list(r){
+      return `<div class="chain">${r.order.map((id,i) => `<div class="step ${i < r.step ? "done" : i === r.step && r.started ? "now" : ""} ${id===myId?"me":""}">
+        <span class="e">${i < r.step ? "✅" : emojiOf(id)}</span><span class="n">${i+1}. ${nameOf(id)}<small>${esc(r.acts[i])}</small></span></div>`).join("")}</div>`;
+    },
+    view(r){
+      const myTurn = r.started && r.order[r.step] === myId;
+      return card("sky", "Timingkæden", `<h2 class="prompt sm">Gør jeres handling og tryk, når det er jeres tur. Én ad gangen, i rækkefølge.</h2>
+          <p>Hvert led har ${dk(3.5,1)} sekunder. Trykker nogen uden for tur, eller går der for lang tid, ryger kæden. Så drikker synderen ${tar(S())} og alle andre 1.</p>`) +
+        (!r.started ? (isHost() ? `<button class="btn primary" data-a="hostact" data-v="start">Start kæden</button>` : `<p class="waiting">Venter på, at ${nameOf(state.hostId)} starter kæden…</p>`)
+          : `<button class="btn ${myTurn ? "go" : ""}" data-act="tap" style="min-height:96px;font-size:22px">${myTurn ? `${esc(r.acts[r.step])}, TRYK NU!` : "Vent på din tur…"}</button>`) +
+        TYPES.chain.list(r);
+    },
+    result(r){
+      const ok = !r.fail;
+      return card("sky", "Timingkæden", `<h2 class="prompt">${ok ? "Hele kæden holdt! 🎉" : `Kæden røg ved ${nameOf(r.fail.id)}`}</h2>${ok ? "<p>Ingen drikker. I er et hold.</p>" : `<p>${nameOf(r.fail.id)} ${esc(r.fail.why)}.</p>`}`) + TYPES.chain.list(r);
+    }
+  },
+
+  /* ---------- Idé 13: Regnestykke under pres ---------- */
+  mathpress:{
+    name:"Regnestykke under pres", desc:"Flere fejl end spillere = straf", w:0.9, min:1,
+    gen(){
+      const k = rnd(4);
+      if(k === 0){ const a = 3+rnd(10), b = 3+rnd(7), c = 5+rnd(36); return {q:`${a} × ${b} + ${c}`, a:a*b+c} }
+      if(k === 1){ const a = 4+rnd(9), b = 4+rnd(6), c = 2+rnd(Math.min(15, a*b-2)); return {q:`${a} × ${b} − ${c}`, a:a*b-c} }
+      if(k === 2){ const a = 2+rnd(11), b = 2+rnd(11), c = 2+rnd(5); return {q:`(${a} + ${b}) × ${c}`, a:(a+b)*c} }
+      const a = 12+rnd(49), b = 12+rnd(49), c = 5+rnd(Math.min(40, a+b-6)); return {q:`${a} + ${b} − ${c}`, a:a+b-c};
+    },
+    start(r, pool){ r.probs = {}; r.err = {}; r.solved = {}; pool.forEach(p => r.probs[p.id] = TYPES.mathpress.gen()) },
+    act(r, pid, v){
+      if(!isObj(v) || typeof v.g !== "number" || !r.probs[pid] || r.solved[pid]) return false;
+      if(v.g === r.probs[pid].a) r.solved[pid] = true;
+      else r.err[pid] = (r.err[pid]||0) + 1;
+      return true;
+    },
+    done: r => { const ids = onlineIds().filter(id => r.probs[id]); return ids.length > 0 && ids.every(id => r.solved[id]) },
+    reveal(r){
+      const ids = Object.keys(r.probs).filter(id => player(id)?.online || r.solved[id]);
+      const E = Object.values(r.err).reduce((a,b) => a+b, 0), P = ids.length, excess = Math.min(10, Math.max(0, E - P));
+      return {E, P, excess, drink: excess ? onlineIds().map(id => ({id, s:excess})) : []};
+    },
+    view(r){
+      const prob = r.probs[myId], ids = onlineIds().filter(id => r.probs[id]);
+      const E = Object.values(r.err).reduce((a,b) => a+b, 0);
+      if(kp.n !== r.n) kp = {n:r.n, v:"", seen:0};
+      const myErr = r.err[myId] || 0;
+      if(myErr > kp.seen){ kp.seen = myErr; setTimeout(() => { toast("Forkert! Prøv igen."); buzz([40,40,40]) }) }
+      let mine;
+      if(!prob) mine = `<p class="hint">Du kom med midt i runden. Hep på de andre.</p>`;
+      else if(r.solved[myId]) mine = `<div class="drinkhead" style="text-align:center">Løst! ✅</div><p class="waiting">Venter på de andre…</p>`;
+      else mine = `<div class="eq">${esc(prob.q)} = ?</div><div class="kpdisp">${esc(kp.v) || "&nbsp;"}</div>
+        <div class="keypad">${["1","2","3","4","5","6","7","8","9","del","0","ok"].map(k => `<button data-kp="${k}" class="${k==="ok"?"ok":""}">${k==="del"?"⌫":k==="ok"?"OK":k}</button>`).join("")}</div>`;
+      return card("teal", "Regnestykke under pres", `<h2 class="prompt sm">Alle skal løse deres eget regnestykke.</h2>
+          <p>Fejl tæller for hele bordet. Bliver der flere fejl end spillere (${ids.length}), drikker alle 1 tår pr. ekstra fejl.</p>`) +
+        `<div class="label">Fejl indtil nu: ${E} af ${ids.length} tilladte</div>` + mine +
+        progress(ids, id => r.solved[id]);
+    },
+    result(r, res){
+      return card("teal", "Regnestykke under pres", `<h2 class="prompt">${res.E} fejl, ${res.P} spillere</h2>
+          <p>${res.excess ? `${res.excess} fejl for meget. Alle drikker ${tar(res.excess)}.` : "Under grænsen. Ingen fælles straf!"}</p>`) +
+        `<div class="result">${Object.keys(r.probs).filter(id => player(id)).map(id => `<div class="res"><span class="e">${emojiOf(id)}</span><span class="n">${nameOf(id)}</span><span class="v">${r.solved[id] ? "✅" : "❌"} ${r.err[id]||0} fejl</span></div>`).join("")}</div>`;
+    }
+  },
+
+  /* ---------- Konkurrencer fra før ---------- */
+  duel:{
+    name:"Duel", desc:"1 mod 1, de andre gætter", w:2, min:2,
+    start(r, pool){
+      const [a,b] = pickLeast("duel", pool, 2);
+      let c = pickCard("duel", DUELS);
+      for(let i=0; i<6 && (a.id === myId || b.id === myId) && /værten/.test(c[1]); i++) c = pickCard("duel", DUELS);  // værten kan ikke dømme sin egen duel
+      r.a = a.id; r.b = b.id; r.text = c[1]; r.lvl = c[0];
+    },
+    act(r, pid, v){
+      if(v === "lose" && (pid === r.a || pid === r.b)){ r.winner = pid === r.a ? "b" : "a"; return "reveal" }
+      if(v === "tie" && (pid === r.a || pid === r.b || pid === myId)){ r.winner = "tie"; return "reveal" }
+      if((v === "win:a" || v === "win:b") && pid === myId){ r.winner = v.slice(4); return "reveal" }
+      if((v === "a" || v === "b") && pid !== r.a && pid !== r.b){ r.answers[pid] = v; return true }
+      return false;
+    },
+    opt: v => v === "a" || v === "b",
+    reveal(r){
+      const w = r.winner || "tie", A = r.answers;
+      const res = {winner:w, right:Object.keys(A).filter(id => w !== "tie" && A[id] === w), wrong:Object.keys(A).filter(id => w !== "tie" && A[id] !== w)};
+      if(w === "tie") res.drink = [{id:r.a, s:S()}, {id:r.b, s:S()}];
+      else { res.drink = [{id: w === "a" ? r.b : r.a, s:S()*2}, ...res.wrong.map(id => ({id, s:S()}))]; res.win = [w === "a" ? r.a : r.b] }
+      return res;
+    },
+    vs(r, res){
+      const cls = s => !res || res.winner === "tie" ? "" : res.winner === s ? "win" : "lose";
+      return `<div class="vs"><div class="side ${cls("a")}"><div class="e">${emojiOf(r.a)}</div><div class="nm">${nameOf(r.a)}</div></div><div class="x">VS</div>
+        <div class="side ${cls("b")}"><div class="e">${emojiOf(r.b)}</div><div class="nm">${nameOf(r.b)}</div></div></div>`;
+    },
+    view(r){
+      const inDuel = r.a === myId || r.b === myId, bet = r.answers[myId];
+      return card("pink", "Duel", TYPES.duel.vs(r) + `<h2 class="prompt sm">${esc(r.text)}</h2>`, chili(r.lvl)) +
+        (inDuel ? `<p class="hint">Taberen drikker ${tar(S()*2)}. Vær ærlig, når I er færdige:</p>
+          <div class="choices two"><button class="choice tall" data-act="lose"><span class="em">😩</span>Jeg tabte</button>
+          <button class="choice tall" data-act="tie"><span class="em">🤝</span>Uafgjort</button></div>`
+        : `<div class="label">Hvem vinder? Forkert gæt koster ${tar(S())}</div><div class="choices two">
+          <button class="choice tall" data-act="a" aria-pressed="${bet==="a"}"><span class="em">${emojiOf(r.a)}</span>${nameOf(r.a)}</button>
+          <button class="choice tall" data-act="b" aria-pressed="${bet==="b"}"><span class="em">${emojiOf(r.b)}</span>${nameOf(r.b)}</button></div>`) +
+        judge("Dommer: hvem vandt?", [["win:a", nameOf(r.a)], ["win:b", nameOf(r.b)], ["tie","Uafgjort"]]);
+    },
+    result(r, res){
+      const w = res.winner === "a" ? r.a : res.winner === "b" ? r.b : null;
+      return card("pink", "Duel", TYPES.duel.vs(r, res) + `<h2 class="prompt">${w ? `${nameOf(w)} vandt!` : "Uafgjort!"}</h2>`, chili(r.lvl)) +
+        (res.right.length || res.wrong.length ? `<div class="split"><div class="col"><h4>Gættede rigtigt</h4><div class="names">${res.right.map(nameOf).join(", ") || "Ingen"}</div></div>
+          <div class="col"><h4>Gættede forkert</h4><div class="names">${res.wrong.map(nameOf).join(", ") || "Ingen"}</div></div></div>` : "");
+    }
+  },
+
+  hot:{
+    name:"Sandhed eller konsekvens", desc:"Gør det, eller drik dobbelt", w:1.5, min:1,
+    start(r, pool){
+      r.target = pickLeast("hot", pool, 1)[0].id;
+      const t = pickCard("truth", TRUTHS), d = pickCard("dare", DARES);
+      Object.assign(r, {truth:t[1], tl:t[0], dare:d[1], dl:d[0], pick:null});
+    },
+    act(r, pid, v){
+      if(pid !== r.target && pid !== myId) return false;
+      if((v === "truth" || v === "dare") && !r.pick){ r.pick = v; return true }
+      if((v === "done" || v === "drank") && r.pick){ r.choice = v; return "reveal" }
+      return false;
+    },
+    reveal: r => r.choice === "done" ? {win:[r.target], drink:[]} : {drink:[{id:r.target, s:S()*2}]},
+    view(r){
+      const isT = r.target === myId, t = nameOf(r.target);
+      if(!r.pick) return card("violet", "Sandhed eller konsekvens", `<div class="who">${isT ? "Det er dig i stolen!" : `${who(r.target)} er i stolen`}</div>
+          <h2 class="prompt">${isT ? "Sandhed eller konsekvens?" : `${t} vælger…`}</h2>`) +
+        (isT ? `<div class="choices two"><button class="choice hotpick" data-act="truth">Sandhed</button><button class="choice hotpick" data-act="dare">Konsekvens</button></div>
+          <p class="hint">Du ser kortet, når du har valgt. Siger du nej bagefter, drikker du ${tar(S()*2)}.</p>` : judge("Vælg for dem", [["truth","Sandhed"],["dare","Konsekvens"]]));
+      const isTruth = r.pick === "truth";
+      return card("violet", isTruth ? "Sandhed" : "Konsekvens", `<div class="who">${isT ? "Din tur:" : `${who(r.target)}:`}</div><h2 class="prompt sm">${esc(isTruth ? r.truth : r.dare)}</h2>`, chili(isTruth ? r.tl : r.dl)) +
+        (isT ? `<div class="choices two"><button class="choice tall" data-act="done"><span class="em">😈</span>${isTruth ? "Svaret" : "Klaret"}</button>
+          <button class="choice tall" data-act="drank"><span class="em">🍺</span>Drik ${tar(S()*2)}</button></div>`
+          : `<p class="waiting">${t} ${isTruth ? "svarer" : "gør det"} eller drikker ${tar(S()*2)}.</p>` + judge("Dommer", [["done",`${t} klarede det`],["drank",`${t} drak`]]));
+    },
+    result(r){
+      const isTruth = r.pick === "truth";
+      return card("violet", isTruth ? "Sandhed" : "Konsekvens", `<div class="who">${who(r.target)}:</div><h2 class="prompt sm">${esc(isTruth ? r.truth : r.dare)}</h2>
+        ${r.choice === "done" ? `<p>${nameOf(r.target)} turde! +1 🏆</p>` : ""}`, chili(isTruth ? r.tl : r.dl));
+    }
+  },
+
+  reflex:{
+    name:"Hurtigste finger", desc:"Tryk når skærmen er grøn", w:0.8, min:1,
+    start(r){ r.delay = 1500 + rnd(4000); r.limit = 3000 + r.delay + 6000 },
+    act: gameAct(99999), done: allOnlineAnswered,
+    reveal: r => gameReveal(r, true),
+    result: (r,res) => gameResult(r, res, "teal", () => `må dele ${tar(S())} ud`)
+  },
+  tap:{
+    name:"Tap-krig", desc:"Flest tryk på 5 sekunder", w:0.8, min:1,
+    start(r){ r.limit = 3000 + 5000 + 5000 },
+    act: gameAct(150), done: allOnlineAnswered,
+    reveal: r => gameReveal(r, false),
+    result: (r,res) => gameResult(r, res, "teal", () => `må dele ${tar(S())} ud`)
+  },
+
+  vote:{
+    name:"Afstemning", desc:"Flest stemmer drikker", w:0.8, min:2,
+    start(r){ const c = pickCard("vote", VOTES); r.text = c[1]; r.lvl = c[0] },
+    act(r, pid, v){ if(player(v)){ r.answers[pid] = v; return true } return false },
+    opt: () => true, done: allOnlineAnswered,
+    reveal(r){
+      const tally = tallyVotes(r.answers), max = tally.length ? tally[0][1] : 0;
+      return {tally, drink: tally.filter(([,c]) => c === max && max > 0).map(([id]) => ({id, s:S()}))};
+    },
+    view(r){
+      return card("amber", "Afstemning", `<h2 class="prompt">${esc(r.text)}</h2>`, chili(r.lvl)) +
+        `<div class="label">Stem på én · flest stemmer drikker ${tar(S())}</div>` + voteButtons(state.players.map(p => p.id), r.answers[myId]) +
+        progress(onlineIds(), id => r.answers[id]);
+    },
+    result: (r,res) => card("amber", "Afstemning", `<h2 class="prompt">${esc(r.text)}</h2>`, chili(r.lvl)) + tallyView(res.tally)
+  },
+
+  chaos:{
+    name:"Kaoskort", desc:"Tilfældige kort", w:0.8, min:1,
+    start(r, pool){
+      const c = pickCard("chaos", CHAOS); r.lvl = c.l;
+      const p = pick(pool); let drinkers = [], pName = p.name;
+      if(c.who === "rand") drinkers = [p];
+      if(c.who === "all") drinkers = pool;
+      if(c.who === "least"){ const min = Math.min(...pool.map(x => x.sips)); drinkers = pool.filter(x => x.sips === min); pName = drinkers.map(x => x.name).join(" og ") }
+      r.text = c.t.replace(/\{p\}/g, "\u0001" + pName + "\u0002").replace(/\{S\}/g, tar(S()));
+      return {drink: drinkers.map(x => ({id:x.id, s:S()}))};
+    },
+    result: r => card("chaos", "Kaoskort", `<h2 class="prompt sm">${esc(r.text).replace(/\u0001(.*?)\u0002/g, "<b>$1</b>")}</h2>`, chili(r.lvl))
+  }
+};
 
 /* ============================================================
    GÆST
    ============================================================ */
 function joinGame(code){
   teardown();
-  role = "guest"; state = null;
+  role = "guest"; state = null; lastJson = ""; lastFlash = null;
   ui = {...ui, screen:"connecting", err:"", code, menu:false};
   render();
   peer = new Peer({debug:0});
@@ -726,13 +1430,20 @@ function connectHost(){
     clearTimeout(timeout); connecting = false;
     hostConn = c; everConnected = true; lastHostMsg = Date.now(); ui.online = true;
     store.set(SAVE_LAST, ui.code);
-    c.send({t:"hello", id:myId, name:me.name, emoji:me.emoji});
+    c.send({t:"hello", id:myId, name:me.name, emoji:me.emoji, photo:me.photo});
     keepAwake();
   });
   c.on("data", d => {
     lastHostMsg = Date.now();
-    if(!d || typeof d !== "object") return;
-    if(d.t === "state" && d.s){ state = d.s; ui.screen = "game"; ui.online = true; render() }
+    if(!isObj(d)) return;
+    if(d.t === "state" && isObj(d.s)){
+      if(typeof d.now === "number") clockOffset = Date.now() - d.now;
+      const json = JSON.stringify(d.s);
+      const wasOffline = !ui.online || ui.screen !== "game";
+      ui.screen = "game"; ui.online = true;
+      if(json === lastJson && !wasOffline) return;   // intet nyt: undgå at gentegne midt i en indtastning
+      lastJson = json; state = d.s; render();
+    }
     if(d.t === "closed"){ store.del(SAVE_LAST); teardown(); role=null; state=null; ui={...ui, screen:"home", err:"Værten har lukket spillet."}; render() }
     if(d.t === "kicked"){ store.del(SAVE_LAST); teardown(); role=null; state=null; ui={...ui, screen:"home", err:"Du blev fjernet fra spillet."}; render() }
   });
@@ -753,22 +1464,47 @@ setInterval(() => {
 
 function send(msg){ if(hostConn && hostConn.open) try{ hostConn.send(msg) }catch(e){} }
 
-/* ---- handling fra denne telefon ---- */
+function closeGame(){
+  if(role === "host"){
+    guests.forEach(g => { try{ g.conn.send({t:"closed"}) }catch(e){} });
+    store.del(SAVE_HOST);
+  } else if(hostConn && hostConn.open){
+    try{ hostConn.send({t:"leave"}) }catch(e){}
+    store.del(SAVE_LAST);
+  }
+  setTimeout(() => { teardown(); state = null; role = null; ui = {screen:"home", err:"", code:"", menu:false, online:true, call:false}; render() }, 250);
+}
+
+function teardown(){
+  clearTimeout(guestTimer); guestTimer = null;
+  guests.forEach(g => { try{ g.conn.close() }catch(e){} }); guests.clear();
+  if(hostConn) try{ hostConn.close() }catch(e){}
+  hostConn = null;
+  if(peer) try{ peer.destroy() }catch(e){}
+  peer = null; everConnected = false; connecting = false;
+  clearMg(); mg = {n:-1};
+}
+
+/* ---- handlinger fra denne telefon ---- */
 function act(v){
   const r = state && state.round; if(!r) return;
   buzz(15);
-  if(role === "host") hostAct(myId, r.n, v);
-  else {
-    if(r.type === "hot" && (v === "truth" || v === "dare")) r.pick = v;
-    else if(!(r.type === "duel" && (v === "lose" || v === "tie"))) r.answers[myId] = v;
-    send({t:"act", n:r.n, v}); render();
-  }
+  if(role === "host") return hostAct(myId, r.n, v);
+  const T = TYPES[r.type];
+  if(T.opt && T.opt(v)){ r.answers[myId] = v; render() }   // vis valget med det samme
+  send({t:"act", n:r.n, v});
+}
+function side(v){
+  buzz(15);
+  if(role === "host") hostSide(myId, v); else send({t:"side", v});
 }
 
 /* ============================================================
-   MINISPIL — tidtagning sker lokalt på hver telefon
+   LOKALE MOTORER
    ============================================================ */
+let mfkSel = {n:-1}, kp = {n:-1}, peek = {n:-1};
 let mg = {n:-1};
+const MG_TYPES = ["reflex","tap","stop"];
 function clearMg(){ (mg.timers || []).forEach(clearTimeout) }
 function mgLater(fn, ms){ const n = mg.n; mg.timers.push(setTimeout(() => { if(mg.n === n) fn() }, ms)) }
 function ensureMg(r){
@@ -787,8 +1523,7 @@ function beginMg(r){
     mgLater(() => { if(mg.phase === "wait"){ mg.phase = "go"; mg.t0 = performance.now(); buzz(60); render() } }, r.delay);
   }
   if(r.type === "tap"){ mg.phase = "play"; mg.taps = 0; mgLater(() => finishMg(mg.taps), 5000) }
-  if(r.type === "stopwatch"){ mg.phase = "play"; mgLater(() => { if(mg.phase === "play") finishMg(7000) }, 12000) }
-  if(r.type === "math"){ mg.phase = "play"; mg.qi = 0; mg.wrong = 0; mgLater(() => { if(mg.phase === "play") finishMg(60000) }, 45000) }
+  if(r.type === "stop"){ mg.phase = "play"; mg.target = r.target; mgLater(() => { if(mg.phase === "play") finishMg(9999) }, r.target + 5000) }
   buzz(30); render();
 }
 function finishMg(score){
@@ -804,33 +1539,43 @@ function mgTap(){
     else if(mg.phase === "go") finishMg(Math.round(performance.now() - mg.t0));
   }
   if(r.type === "tap" && mg.phase === "play"){ mg.taps++; const el = $("#tapn"); if(el) el.textContent = mg.taps }
-  if(r.type === "stopwatch" && mg.phase === "play") finishMg(Math.round(Math.abs(performance.now() - mg.t0 - 5000)));
+  if(r.type === "stop" && mg.phase === "play") finishMg(Math.round(Math.abs(performance.now() - mg.t0 - r.target)));
 }
-function mathAnswer(v){
-  const r = state && state.round;
-  if(!r || r.type !== "math" || mg.phase !== "play") return;
-  const q = r.qs[mg.qi];
-  if(+v !== q.a){ mg.wrong++; buzz([40,40,40]); toast("Forkert! +3 sek.") } else buzz(15);
-  mg.qi++;
-  if(mg.qi >= r.qs.length) finishMg(Math.round(performance.now() - mg.t0 + mg.wrong*3000));
-  else render();
+function mgView(r){
+  ensureMg(r);
+  const rules = {
+    reflex:"Tryk, så snart feltet bliver grønt. Trykker du for tidligt, drikker du.",
+    tap:"Tryk så mange gange som muligt på 5 sekunder.",
+    stop:`Stop uret på præcis ${dk(r.target/1000,2)} sekunder. Tallene forsvinder efter 1,5 sekund. Mere end 1 sekund ved siden af koster ${tar(S())}.`
+  }[r.type];
+  let pad;
+  if(mg.phase === "count") pad = `<div class="pad"><div class="big">${Math.max(1, Math.ceil((mg.start - performance.now())/1000))}</div><p>${esc(rules)}</p></div>`;
+  else if(mg.phase === "done") pad = `<div class="pad"><div class="big" style="font-size:44px">${fmtScore(r, mg.score)}</div><p>Venter på de andre…</p></div>`;
+  else if(r.type === "reflex") pad = mg.phase === "wait" ? `<div class="pad wait" data-mg="1"><div class="big">Vent…</div><p>Ikke endnu!</p></div>` : `<div class="pad go" data-mg="1"><div class="big">TRYK!</div></div>`;
+  else if(r.type === "tap") pad = `<div class="pad play" data-mg="1"><div class="big" id="tapn">${mg.taps}</div><p>TRYK! TRYK! TRYK! · <span id="tapleft">5,0</span> s</p></div>`;
+  else if(r.type === "stop") pad = `<div class="pad play" data-mg="1"><p>Stop på ${dk(r.target/1000,2)}</p><div class="big" id="sw">0,00</div><p>Tryk når du tror, tiden er inde</p></div>`;
+  return `<div class="drinkhead" style="font-size:26px;margin:0">${TYPES[r.type].name}</div>${pad}
+    <p class="hint">Bedst vinder et 🏆. Dårligst drikker ${tar(S())}.</p>` + progress(onlineIds(), id => r.answers[id] !== undefined);
 }
 (function loop(){
   if(mg.phase === "play" && mg.t0){
     const e = performance.now() - mg.t0;
-    if(mg.type === "tap"){ const el = $("#tapleft"); if(el) el.textContent = dk(Math.max(0,(5000-e)/1000),1) }
-    if(mg.type === "stopwatch"){ const el = $("#sw"); if(el) el.textContent = e < 1500 ? dk(e/1000,2) : "?,??" }
-    if(mg.type === "math"){ const el = $("#mt"); if(el) el.textContent = dk(e/1000,1) + " s" }
+    if(mg.type === "tap"){ const el = $("#tapn"); const l = $("#tapleft"); if(l) l.textContent = dk(Math.max(0,(5000-e)/1000),1) }
+    if(mg.type === "stop"){ const el = $("#sw"); if(el) el.textContent = e < 1500 ? dk(e/1000,2) : "?,??" }
   }
   requestAnimationFrame(loop);
 })();
-function fmtScore(type, v){
-  if(type === "reflex") return v < 0 ? "For tidligt" : v + " ms";
-  if(type === "tap") return v + " tryk";
-  if(type === "stopwatch") return "±" + dk(v/1000,2) + " s";
-  if(type === "math") return dk(v/1000,1) + " s";
-  return v;
-}
+/* Nedtællinger på skærmen */
+setInterval(() => {
+  let rerender = false;
+  document.querySelectorAll("[data-until]").forEach(el => {
+    const left = +el.dataset.until - Date.now();
+    el.textContent = fmtLeft(Math.max(0, left));
+    if(left <= 0 && el.hasAttribute("data-rerender") && !el.dataset.fired){ el.dataset.fired = "1"; rerender = true }
+  });
+  document.querySelectorAll("[data-bar]").forEach(el => { el.style.width = Math.max(0, Math.min(100, (+el.dataset.bar - Date.now()) / +el.dataset.dur * 100)) + "%" });
+  if(rerender) render();
+}, 250);
 
 /* Hold skærmen tændt */
 let wakeLock = null;
@@ -847,15 +1592,23 @@ document.addEventListener("visibilitychange", () => {
 /* ============================================================
    VISNING
    ============================================================ */
-function nameOf(id){ const p = player(id); return p ? esc(p.name) : "?" }
-function emojiOf(id){ const p = player(id); return p ? esc(p.emoji) : "" }
-function richText(s){ return esc(s).replace(/\u0001(.*?)\u0002/g, "<b>$1</b>") }
-const chili = l => l >= 2 ? `<span class="chili" aria-label="krydderi ${l}">${"🌶️".repeat(l)}</span>` : "";
-
 function render(){
-  if(ui.screen === "home") return renderHome();
-  if(ui.screen === "connecting" || !state) return renderConnecting();
-  renderGame();
+  /* behold det man er ved at skrive, når skærmen tegnes igen */
+  const keep = {}; let focus = null;
+  app.querySelectorAll("input[id]").forEach(i => keep[i.id] = i.value);
+  const ae = document.activeElement;
+  if(ae && ae.tagName === "INPUT" && ae.id) focus = {id:ae.id, s:ae.selectionStart, e:ae.selectionEnd};
+
+  if(ui.screen === "home") renderHome();
+  else if(ui.screen === "connecting" || !state) renderConnecting();
+  else renderGame();
+
+  if(ui.screen !== "home") Object.entries(keep).forEach(([id,v]) => { const el = document.getElementById(id); if(el) el.value = v });
+  if(focus){ const el = document.getElementById(focus.id); if(el){ el.focus(); try{ el.setSelectionRange(focus.s, focus.e) }catch(e){} } }
+  if(state && state.flash && state.flash.id !== lastFlash){
+    if(lastFlash !== null || role === "host") toast(state.flash.text, 4500);
+    lastFlash = state.flash.id;
+  }
 }
 
 function renderHome(){
@@ -868,7 +1621,7 @@ function renderHome(){
   app.innerHTML = `
   <div class="wrap">
     <header class="hero">
-      <div class="bubbles" aria-hidden="true">${Array.from({length:12},(_,i)=>`<i style="left:${(i*37)%100}%;animation-delay:${dk((i*0.53)%6,2).replace(",",".")}s;width:${6+(i%4)*4}px;height:${6+(i%4)*4}px"></i>`).join("")}</div>
+      <div class="bubbles" aria-hidden="true">${Array.from({length:12},(_,i)=>`<i style="left:${(i*37)%100}%;animation-delay:${((i*53)%600)/100}s;width:${6+(i%4)*4}px;height:${6+(i%4)*4}px"></i>`).join("")}</div>
       <h1 class="logo">Skål!<small>Dyst. Tab. Drik.</small></h1>
     </header>
     ${ui.err ? `<p class="err" role="alert">${esc(ui.err)}</p>` : ""}
@@ -876,7 +1629,13 @@ function renderHome(){
       <label class="label" for="name">Dit navn</label>
       <input class="field" id="name" maxlength="16" autocomplete="nickname" placeholder="Fx Mads" value="${esc(me.name)}">
       <div class="label">Din figur</div>
-      <div class="emojis">${EMOJIS.map(e=>`<button data-emoji="${e}" aria-pressed="${e===me.emoji}" aria-label="Vælg ${e}">${e}</button>`).join("")}</div>
+      <div class="photorow">
+        <span class="avatar-lg">${me.photo ? `<img src="${okPhoto(me.photo)}" alt="Dit profilbillede">` : esc(me.emoji)}</span>
+        <label class="btn small" for="photo">📷 ${me.photo ? "Skift billede" : "Brug eget billede"}</label>
+        ${me.photo ? `<button class="btn small ghost" data-a="nophoto" style="flex:0 0 auto">Fjern</button>` : ""}
+        <input type="file" id="photo" accept="image/*" hidden>
+      </div>
+      <div class="emojis">${EMOJIS.map(e=>`<button data-emoji="${e}" aria-pressed="${!me.photo && e===me.emoji}" aria-label="Vælg ${e}">${e}</button>`).join("")}</div>
     </section>
     <section class="panel">
       <div class="label">Deltag i et spil</div>
@@ -901,11 +1660,28 @@ function renderConnecting(){
     <button class="btn small ghost" data-a="cancel">Annullér</button></section></div>`;
 }
 
+function banners(){
+  let h = "";
+  const ev = state.event;
+  if(ev && L(ev.end) > Date.now() && state.phase !== "lobby" && state.phase !== "end"){
+    const until = L(ev.end);
+    h += `<div class="banner event"><div class="top"><span class="lbl">Hændelse</span><span class="timer" data-until="${until}" data-rerender>${fmtLeft(until - Date.now())}</span></div>
+      <div class="txt">${esc(ev.text)}</div><div class="tbar"><i data-bar="${until}" data-dur="${ev.dur}" style="width:${Math.max(0,(until-Date.now())/ev.dur*100)}%"></i></div>
+      <button class="btn small ink" data-a="call">Nogen brød reglen</button></div>`;
+  }
+  state.missions.filter(m => m.agent === myId).forEach(m => {
+    h += `<div class="banner mission"><div class="top"><span class="lbl" style="color:var(--amber)">Din hemmelige mission 🤫</span><span class="lbl">til og med runde ${m.until}</span></div>
+      <div class="txt">Kald ${who(m.target)} for "${esc(m.name)}"</div>
+      <div class="row"><button class="btn small" ${sidej({k:"mission", id:m.id, ok:true})}>Klaret ✅</button><button class="btn small ghost" ${sidej({k:"mission", id:m.id, ok:false})}>Afsløret 😬</button></div></div>`;
+  });
+  return h;
+}
+
 function renderGame(){
-  const mine = player(myId);
-  const isHost = role === "host";
+  const mine = player(myId), b = state.buddy;
+  const mate = b && (b.a === myId ? b.b : b.b === myId ? b.a : null);
   let body = "";
-  if(state.phase === "lobby") body = isHost ? lobbyHost() : lobbyGuest();
+  if(state.phase === "lobby") body = lobbyView();
   else if(state.phase === "round") body = roundView();
   else if(state.phase === "reveal") body = revealView();
   else if(state.phase === "end") body = endView();
@@ -914,22 +1690,25 @@ function renderGame(){
   <div class="topbar"><div class="topbar-in">
     <span class="chip"><span class="k">Kode</span>${esc(state.code)}</span>
     ${mine ? `<span class="chip">🍺 ${mine.sips}</span><span class="chip">🏆 ${mine.wins||0}</span>` : ""}
+    ${mate ? `<span class="chip" title="Din drukmakker">🤝 ${nameOf(mate)}</span>` : ""}
     <span class="spacer"></span>
     <button class="iconbtn" data-a="menu" aria-label="Menu og stilling">☰</button>
   </div></div>
   <div class="wrap game">
-    ${!ui.online ? `<div class="offline-banner">${isHost ? "Mistet forbindelsen. Prøver igen…" : "Mistet forbindelsen til værten. Prøver igen…"}</div>` : ""}
+    ${!ui.online ? `<div class="offline-banner">${isHost() ? "Mistet forbindelsen. Prøver igen…" : "Mistet forbindelsen til værten. Prøver igen…"}</div>` : ""}
+    ${banners()}
     ${body}
   </div>
-  ${ui.menu ? menuView() : ""}`;
-  if(state.phase === "lobby" && isHost) drawQR();
+  ${ui.menu ? menuView() : ""}
+  ${ui.call ? callView() : ""}`;
+  if(state.phase === "lobby" && isHost()) drawQR();
 }
 
 function playerTiles(withKick){
   return `<div class="players">${state.players.map(p => `
     <div class="pl ${p.online?"":"off"} ${p.id===myId?"me":""}">
       ${withKick && p.id!==myId ? `<button class="x" data-a="kick" data-v="${esc(p.id)}" aria-label="Fjern ${esc(p.name)}">✕</button>` : ""}
-      <div class="em">${esc(p.emoji)}</div><div class="nm">${esc(p.name)}</div>
+      <div class="em">${avatar(p)}</div><div class="nm">${esc(p.name)}</div>
       <div class="sub">${p.id===state.hostId?"Vært":p.online?"Klar":"Offline"}</div>
     </div>`).join("")}</div>`;
 }
@@ -940,13 +1719,21 @@ function settings(enabled){
   return `<section class="panel">
     <div class="label">Tår pr. straf</div>${picker(LEVELS,"intensity","level",enabled)}
     <div class="label">Krydderi</div>${picker(SPICES,"spice","spice",enabled,"hot")}
-    ${state.spice > 1 ? `<p class="hint consent">Du kan altid drikke ${tar(sipsBase()*2)} i stedet for en udfordring. Udfordringer med andre kræver, at de siger ja.</p>` : ""}
+    ${state.spice > 1 ? `<p class="hint consent">Du kan altid drikke ${tar(S()*2)} i stedet for en udfordring. Udfordringer med andre kræver, at de siger ja.</p>` : ""}
+  </section>
+  <section class="panel">
+    <div class="eyebrow"><span class="label">Spil i rotationen</span><span class="label">${Object.keys(TYPES).filter(t => state.enabled[t] !== false).length} af ${Object.keys(TYPES).length}</span></div>
+    <div class="toggles">${Object.entries(TYPES).map(([t,T]) => `<button class="tog" data-a="toggle" data-v="${t}" aria-pressed="${state.enabled[t] !== false}" ${enabled?"":"disabled"}>${T.name}<small>${T.desc}${T.min > 2 ? ` · min. ${T.min}` : ""}</small></button>`).join("")}</div>
   </section>`;
 }
 function joinUrl(){ return location.origin + location.pathname + "#" + state.code }
 
-function lobbyHost(){
+function lobbyView(){
   const n = state.players.length;
+  if(!isHost()) return `
+    <section class="panel" style="text-align:center"><div class="drinkhead">Du er med!</div><p class="hint">Venter på, at ${nameOf(state.hostId)} starter spillet.</p></section>
+    <section class="panel"><div class="eyebrow"><span class="label">Spillere</span><span class="label">${n}</span></div>${playerTiles(false)}</section>
+    ${settings(false)}`;
   const canLink = location.protocol.startsWith("http");
   return `
   <section class="panel" style="text-align:center">
@@ -956,26 +1743,9 @@ function lobbyHost(){
     <div class="row"><button class="btn small" data-a="copy">Kopiér link</button>${navigator.share?`<button class="btn small" data-a="share">Del</button>`:""}</div>` : ""}
     <p class="hint">Bed de andre åbne Skål! og skrive koden eller scanne QR-koden.</p>
   </section>
-  <section class="panel">
-    <div class="eyebrow"><span class="label">Spillere</span><span class="label">${n}</span></div>
-    ${playerTiles(true)}
-  </section>
+  <section class="panel"><div class="eyebrow"><span class="label">Spillere</span><span class="label">${n}</span></div>${playerTiles(true)}</section>
   ${settings(true)}
-  <div class="stickybottom">
-    <button class="btn primary" data-a="start" ${n<2?"disabled":""}>${n<2?"Venter på spillere…":"Start spillet"}</button>
-  </div>`;
-}
-function lobbyGuest(){
-  return `
-  <section class="panel" style="text-align:center">
-    <div class="drinkhead">Du er med!</div>
-    <p class="hint">Venter på, at ${nameOf(state.hostId)} starter spillet.</p>
-  </section>
-  <section class="panel">
-    <div class="eyebrow"><span class="label">Spillere</span><span class="label">${state.players.length}</span></div>
-    ${playerTiles(false)}
-  </section>
-  ${settings(false)}`;
+  <div class="stickybottom"><button class="btn primary" data-a="start" ${n<2?"disabled":""}>${n<2?"Venter på spillere…":"Start spillet"}</button></div>`;
 }
 
 function drawQR(){
@@ -983,185 +1753,41 @@ function drawQR(){
   try{ const q = qrcode(0, "M"); q.addData(joinUrl()); q.make(); el.innerHTML = `<img alt="QR-kode til spillet" src="${q.createDataURL(6, 2)}">` }catch(e){}
 }
 
-function eyebrow(r, extra){ return `<div class="eyebrow"><span class="t">Runde ${r.n}${extra?" · "+extra:""}</span><span class="t">${tar(sipsBase())} pr. straf</span></div>` }
-
-function progress(r){
-  const on = state.players.filter(p => p.online);
-  const done = on.filter(p => r.answers[p.id] !== undefined).length;
-  return `<div class="label">${done} af ${on.length} er færdige</div>
-    <div class="progress">${on.map(p => `<span class="dot ${r.answers[p.id]!==undefined?"ok":""}"><span class="e">${esc(p.emoji)}</span>${esc(p.name)}</span>`).join("")}</div>`;
-}
-function hostControls(r, withReveal){
-  if(role !== "host") return "";
-  const any = Object.keys(r.answers).length > 0;
-  return `<div class="hostbar">
-    ${withReveal ? `<button class="btn small" data-a="reveal" ${any?"":"disabled"}>Vis resultat nu</button>` : ""}
-    <button class="btn small ghost" data-a="skip">Spring over</button></div>`;
-}
-function vsBlock(r, res){
-  const cls = s => !res ? "" : res.winner === "tie" ? "" : res.winner === s ? "win" : "lose";
-  return `<div class="vs">
-    <div class="side ${cls("a")}"><div class="e">${emojiOf(r.a)}</div><div class="nm">${nameOf(r.a)}</div></div>
-    <div class="x">VS</div>
-    <div class="side ${cls("b")}"><div class="e">${emojiOf(r.b)}</div><div class="nm">${nameOf(r.b)}</div></div></div>`;
-}
-
 function roundView(){
-  const r = state.round, T = TYPES[r.type], S = sipsBase();
-
-  if(r.type === "duel"){
-    const amA = r.a === myId, amB = r.b === myId, inDuel = amA || amB;
-    const opp = amA ? r.b : r.a, bet = r.answers[myId];
-    const bettors = state.players.filter(p => p.online && p.id !== r.a && p.id !== r.b);
-    return `${eyebrow(r)}
-      <article class="card duel"><div class="kind"><span>${T.kind}</span>${chili(r.lvl)}</div>
-        ${vsBlock(r)}
-        <h2 class="prompt sm">${esc(r.text)}</h2></article>
-      ${inDuel ? `<p class="hint">Du dyster mod <b>${nameOf(opp)}</b>. Taberen drikker ${tar(S*2)}. Vær ærlig, når I er færdige:</p>
-        <div class="choices two">
-          <button class="choice tall" data-act="lose"><span class="em">😩</span>Jeg tabte</button>
-          <button class="choice tall" data-act="tie"><span class="em">🤝</span>Uafgjort</button></div>`
-      : `<div class="label">Hvem vinder? Gætter du forkert, drikker du ${tar(S)}</div>
-        <div class="choices two">
-          <button class="choice tall" data-act="a" aria-pressed="${bet==="a"}"><span class="em">${emojiOf(r.a)}</span>${nameOf(r.a)}</button>
-          <button class="choice tall" data-act="b" aria-pressed="${bet==="b"}"><span class="em">${emojiOf(r.b)}</span>${nameOf(r.b)}</button></div>`}
-      ${bettors.length ? `<div class="label">${bettors.filter(p => r.answers[p.id]).length} af ${bettors.length} har gættet</div>` : ""}
-      ${role === "host" ? `<div class="judge"><div class="label">Dommer: hvem vandt?</div>
-        <div class="row"><button class="btn small" data-a="hostact" data-v="win:a">${nameOf(r.a)}</button><button class="btn small" data-a="hostact" data-v="win:b">${nameOf(r.b)}</button></div>
-        <button class="btn small ghost" data-a="hostact" data-v="tie">Uafgjort</button></div>` : ""}
-      ${hostControls(r, false)}`;
-  }
-
-  if(r.type === "hot"){
-    const isT = r.target === myId, t = nameOf(r.target);
-    if(!r.pick) return `${eyebrow(r)}
-      <article class="card hot"><div class="kind"><span>${T.kind}</span></div>
-        <div class="who">${isT ? "Det er dig i stolen!" : `${emojiOf(r.target)} ${t} er i stolen`}</div>
-        <h2 class="prompt">${isT ? "Sandhed eller konsekvens?" : `${t} vælger…`}</h2></article>
-      ${isT ? `<div class="choices two">
-          <button class="choice hotpick" data-act="truth">Sandhed</button>
-          <button class="choice hotpick" data-act="dare">Konsekvens</button></div>
-          <p class="hint">Du ser kortet, når du har valgt. Siger du nej bagefter, drikker du ${tar(S*2)}.</p>`
-        : role === "host" ? `<p class="hint">Hvis ${t} ikke kan trykke, kan du vælge for dem:</p><div class="row"><button class="btn small" data-a="hostact" data-v="truth">Sandhed</button><button class="btn small" data-a="hostact" data-v="dare">Konsekvens</button></div>` : `<p class="waiting">Venter på ${t}…</p>`}
-      ${hostControls(r, false)}`;
-    const isTruth = r.pick === "truth", l = isTruth ? r.tl : r.dl;
-    return `${eyebrow(r)}
-      <article class="card hot"><div class="kind"><span>${isTruth ? "Sandhed" : "Konsekvens"}</span>${chili(l)}</div>
-        <div class="who">${isT ? "Din tur:" : `${emojiOf(r.target)} ${t}:`}</div>
-        <h2 class="prompt sm">${esc(isTruth ? r.truth : r.dare)}</h2></article>
-      ${isT ? `<div class="choices two">
-          <button class="choice tall" data-act="done"><span class="em">😈</span>${isTruth ? "Svaret" : "Klaret"}</button>
-          <button class="choice tall" data-act="drank"><span class="em">🍺</span>Drik ${tar(S*2)}</button></div>`
-        : role === "host" ? `<div class="judge"><div class="label">Dommer</div><div class="row"><button class="btn small" data-a="hostact" data-v="done">${t} klarede det</button><button class="btn small" data-a="hostact" data-v="drank">${t} drak</button></div></div>`
-        : `<p class="waiting">${t} ${isTruth ? "svarer" : "gør det"} eller drikker ${tar(S*2)}.</p>`}
-      ${hostControls(r, false)}`;
-  }
-
-  if(r.type === "vote"){
-    const mine = r.answers[myId];
-    return `${eyebrow(r)}
-      <article class="card vote"><div class="kind"><span>${T.kind}</span>${chili(r.lvl)}</div><h2 class="prompt">${esc(r.text)}</h2></article>
-      <div class="label">Stem på én · flest stemmer drikker ${tar(S)}</div>
-      <div class="voters">${state.players.map(p => `<button class="choice" data-act="${esc(p.id)}" aria-pressed="${mine===p.id}"><span class="em">${esc(p.emoji)}</span>${esc(p.name)}</button>`).join("")}</div>
-      ${progress(r)}${hostControls(r, true)}`;
-  }
-
-  if(T.game){
-    ensureMg(r);
-    const rules = {
-      reflex:"Tryk, så snart feltet bliver grønt. Trykker du for tidligt, drikker du.",
-      tap:"Tryk så mange gange som muligt på 5 sekunder.",
-      stopwatch:"Stop uret på præcis 5,00 sekunder. Tallene forsvinder efter 1,5 sekund.",
-      math:"Tre regnestykker. Hurtigst vinder. Hvert forkert svar koster 3 sekunder."
-    }[r.type];
-    let pad;
-    if(mg.phase === "count"){
-      const c = Math.max(1, Math.ceil((mg.start - performance.now())/1000));
-      pad = `<div class="pad"><div class="big">${c}</div><p>${esc(rules)}</p></div>`;
-    } else if(mg.phase === "done"){
-      pad = `<div class="pad"><div class="big" style="font-size:44px">${fmtScore(r.type, mg.score)}</div><p>Venter på de andre…</p></div>`;
-    } else if(r.type === "reflex"){
-      pad = mg.phase === "wait" ? `<div class="pad wait" data-mg="1"><div class="big">Vent…</div><p>Ikke endnu!</p></div>`
-        : `<div class="pad go" data-mg="1"><div class="big">TRYK!</div></div>`;
-    } else if(r.type === "tap"){
-      pad = `<div class="pad play" data-mg="1"><div class="big" id="tapn">${mg.taps}</div><p>TRYK! TRYK! TRYK! · <span id="tapleft">5,0</span> s</p></div>`;
-    } else if(r.type === "stopwatch"){
-      pad = `<div class="pad play" data-mg="1"><div class="big" id="sw">0,00</div><p>Tryk ved 5,00</p></div>`;
-    } else if(r.type === "math"){
-      const q = r.qs[mg.qi];
-      pad = `<div class="pad"><p>${mg.qi+1} af ${r.qs.length} · <span id="mt">0,0 s</span></p><div class="mathq">${esc(q.q)}</div>
-        <div class="mathopts">${q.opts.map(o => `<button data-mq="${o}">${o}</button>`).join("")}</div></div>`;
-    }
-    return `${eyebrow(r, "Minispil")}
-      <div class="eyebrow"><span class="drinkhead" style="font-size:26px;margin:0">${T.kind}</span></div>
-      ${pad}
-      <p class="hint">Bedst vinder et 🏆. Dårligst drikker ${tar(S)}.</p>
-      ${progress(r)}${hostControls(r, true)}`;
-  }
-  return "";
+  const r = state.round, T = TYPES[r.type];
+  const body = MG_TYPES.includes(r.type) ? mgView(r) : T.view ? T.view(r) : "";
+  const force = isHost() && T.done && Object.keys(r.answers).length ? `<button class="btn small" data-a="reveal">Vis resultat nu</button>` : "";
+  return `<div class="eyebrow"><span class="t">Runde ${r.n} · ${esc(T.name)}</span><span class="t">${tar(S())} pr. straf</span></div>
+    ${body}
+    ${isHost() ? `<div class="hostbar">${force}<button class="btn small ghost" data-a="skip">Spring over</button></div>` : ""}`;
 }
 
 function drinkList(res){
   if(!res.drink.length) return `<div class="drinkhead">Ingen drikker!</div>`;
   return `<div class="drinkhead">Skål!</div><div class="result">${res.drink.map(d =>
-    `<div class="res drink"><span class="e">${emojiOf(d.id)}</span><span class="n">${nameOf(d.id)}${d.id===myId?" (dig)":""}</span><span class="v">${tar(d.s)}</span></div>`).join("")}</div>`;
-}
-function nextBtn(){
-  return role === "host"
-    ? `<div class="stickybottom"><button class="btn primary" data-a="next">Næste runde</button></div>`
-    : `<p class="waiting">Venter på, at ${nameOf(state.hostId)} starter næste runde…</p>`;
+    `<div class="res drink"><span class="e">${emojiOf(d.id)}</span><span class="n">${nameOf(d.id)}${d.id===myId?" (dig)":""}${d.mate?" · makker 🤝":""}</span><span class="v">${tar(d.s)}</span></div>`).join("")}</div>`;
 }
 
 function revealView(){
-  const r = state.round, T = TYPES[r.type], res = r.reveal, S = sipsBase();
-  let card = "", detail = "";
-  if(r.type === "duel"){
-    const w = res.winner === "a" ? r.a : res.winner === "b" ? r.b : null;
-    card = `<article class="card duel"><div class="kind"><span>${T.kind}</span>${chili(r.lvl)}</div>${vsBlock(r, res)}
-      <h2 class="prompt">${w ? `${nameOf(w)} vandt!` : "Uafgjort!"}</h2></article>`;
-    if(res.right.length || res.wrong.length) detail = `<div class="split">
-      <div class="col"><h4>Gættede rigtigt</h4><div class="names">${res.right.map(nameOf).join(", ") || "Ingen"}</div></div>
-      <div class="col"><h4>Gættede forkert</h4><div class="names">${res.wrong.map(nameOf).join(", ") || "Ingen"}</div></div></div>`;
-  }
-  if(r.type === "hot"){
-    const isTruth = r.pick === "truth";
-    card = `<article class="card hot"><div class="kind"><span>${isTruth?"Sandhed":"Konsekvens"}</span>${chili(isTruth?r.tl:r.dl)}</div>
-      <div class="who">${emojiOf(r.target)} ${nameOf(r.target)}:</div><h2 class="prompt sm">${esc(isTruth ? r.truth : r.dare)}</h2></article>`;
-    if(res.choice === "done") detail = `<div class="drinkhead">${nameOf(r.target)} turde! +1 🏆</div>`;
-  }
-  if(r.type === "vote"){
-    card = `<article class="card vote"><div class="kind"><span>${T.kind}</span>${chili(r.lvl)}</div><h2 class="prompt">${esc(r.text)}</h2></article>`;
-    const total = res.tally.reduce((a,[,c]) => a + c, 0) || 1;
-    detail = `<div class="label">Stemmer</div><div class="result">${res.tally.map(([id,c]) => `<div class="res"><span class="e">${emojiOf(id)}</span><span class="n">${nameOf(id)}<div class="bar"><i style="width:${Math.round(c/total*100)}%"></i></div></span><span class="v">${c}</span></div>`).join("")}</div>`;
-  }
-  if(T.game){
-    const A = r.answers, best = res.win[0];
-    card = `<article class="card game"><div class="kind"><span>${T.kind}</span></div>
-      <h2 class="prompt">${best ? `${nameOf(best)} vandt!` : "Ingen gennemførte"}</h2>
-      ${best ? `<div class="who">${fmtScore(r.type, A[best])} · må dele ${tar(S)} ud</div>` : ""}</article>`;
-    detail = `<div class="label">Resultater</div><div class="result">${[
-      ...res.order.map((id,i) => `<div class="res ${i===0?"win":""}"><span class="e">${emojiOf(id)}</span><span class="n">${i+1}. ${nameOf(id)}</span><span class="v">${fmtScore(r.type, A[id])}</span></div>`),
-      ...res.early.map(id => `<div class="res"><span class="e">${emojiOf(id)}</span><span class="n">${nameOf(id)}</span><span class="v">For tidligt</span></div>`),
-      ...res.asleep.map(id => `<div class="res"><span class="e">${emojiOf(id)}</span><span class="n">${nameOf(id)}</span><span class="v">Sov</span></div>`)
-    ].join("")}</div>`;
-  }
-  if(r.type === "chaos"){
-    card = `<article class="card chaos"><div class="kind"><span>${T.kind}</span>${chili(r.lvl)}</div><h2 class="prompt sm">${richText(r.text)}</h2></article>`;
-  }
-  const showDrinks = !(r.type === "hot" && res.choice === "done") && !(r.type === "chaos" && !res.drink.length);
+  const r = state.round, T = TYPES[r.type], res = r.reveal;
+  const silent = (r.type === "mission" || r.type === "event") && !res.drink.length;
   return `<div class="eyebrow"><span class="t">Runde ${r.n} · Resultat</span></div>
-    ${card}${showDrinks ? drinkList(res) : ""}${detail}${nextBtn()}`;
+    ${T.result(r, res)}
+    ${silent ? "" : drinkList(res)}
+    ${isHost() ? `<div class="stickybottom"><button class="btn primary" data-a="next">Næste runde</button></div>`
+      : `<p class="waiting">Venter på, at ${nameOf(state.hostId)} starter næste runde…</p>`}`;
 }
 
 function board(){
-  const sorted = [...state.players].sort((a,b) => (b.wins||0) - (a.wins||0) || a.sips - b.sips);
-  return `<div class="board">${sorted.map((p,i) => `<div class="res ${p.id===myId?"drink":""}"><span class="rank">${i+1}</span><span class="e">${esc(p.emoji)}</span><span class="n">${esc(p.name)}${p.online?"":" · offline"}</span><span class="v">🏆 ${p.wins||0} · 🍺 ${p.sips}</span></div>`).join("")}</div>`;
+  const b = state.buddy, sorted = [...state.players].sort((x,y) => (y.wins||0) - (x.wins||0) || x.sips - y.sips);
+  return `<div class="board">${sorted.map((p,i) => `<div class="res ${p.id===myId?"drink":""}"><span class="rank">${i+1}</span><span class="e">${avatar(p)}</span>
+    <span class="n">${esc(p.name)}${b && (b.a===p.id||b.b===p.id) ? " 🤝" : ""}${p.online?"":" · offline"}</span><span class="v">🏆 ${p.wins||0} · 🍺 ${p.sips}</span></div>`).join("")}</div>`;
 }
 
 function endView(){
   const byWins = [...state.players].sort((a,b) => (b.wins||0) - (a.wins||0) || a.sips - b.sips);
   const bySips = [...state.players].sort((a,b) => b.sips - a.sips);
-  const pod = (s, i, f) => s[i] ? `<div class="p p${i+1}"><div class="e">${esc(s[i].emoji)}</div><div class="nm">${esc(s[i].name)}</div><div class="s">${f(s[i])}</div></div>` : `<div></div>`;
+  const pod = (s, i, f) => s[i] ? `<div class="p p${i+1}"><div class="e">${avatar(s[i])}</div><div class="nm">${esc(s[i].name)}</div><div class="s">${f(s[i])}</div></div>` : `<div></div>`;
   const total = state.players.reduce((a,p) => a + p.sips, 0);
   return `<header class="hero" style="padding-top:8px"><h1 class="logo" style="font-size:60px">Tak for i aften!</h1></header>
     <section class="panel"><div class="label">Aftenens mester · flest sejre</div>
@@ -1170,21 +1796,29 @@ function endView(){
       <div class="podium">${pod(bySips,1,p=>p.sips)}${pod(bySips,0,p=>p.sips)}${pod(bySips,2,p=>p.sips)}</div>
       <p class="hint">${state.n} runder · ${tar(total)} i alt</p></section>
     <section class="panel"><div class="label">Stilling</div>${board()}</section>
-    ${role === "host" ? `<div class="stickybottom"><button class="btn primary" data-a="again">Spil igen med samme hold</button><button class="btn ghost" data-a="close">Luk spillet</button></div>`
+    ${isHost() ? `<div class="stickybottom"><button class="btn primary" data-a="again">Spil igen med samme hold</button><button class="btn ghost" data-a="close">Luk spillet</button></div>`
       : `<button class="btn ghost" data-a="close">Forlad spillet</button>`}`;
 }
 
 function menuView(){
-  const isHost = role === "host";
   return `<div class="scrim" data-a="menu"></div>
   <div class="sheet" role="dialog" aria-label="Menu"><div class="sheet-in">
     <div class="eyebrow"><span class="label">Stilling</span><span class="label">Kode ${esc(state.code)}</span></div>
     ${board()}
-    ${isHost ? `<div class="label">Tår pr. straf</div>${picker(LEVELS,"intensity","level",true)}<div class="label">Krydderi</div>${picker(SPICES,"spice","spice",true,"hot")}` : ""}
-    ${isHost && state.phase==="round" ? `<button class="btn small" data-a="skip">Spring runden over</button>` : ""}
-    ${isHost && state.phase!=="end" && state.phase!=="lobby" ? `<button class="btn small" data-a="end">Afslut og vis resultat</button>` : ""}
-    <button class="btn small ghost" data-a="close">${isHost?"Luk spillet for alle":"Forlad spillet"}</button>
+    ${isHost() ? `<div class="label">Tår pr. straf</div>${picker(LEVELS,"intensity","level",true)}<div class="label">Krydderi</div>${picker(SPICES,"spice","spice",true,"hot")}` : ""}
+    ${isHost() && state.phase==="round" ? `<button class="btn small" data-a="skip">Spring runden over</button>` : ""}
+    ${isHost() && state.phase!=="end" && state.phase!=="lobby" ? `<button class="btn small" data-a="end">Afslut og vis resultat</button>` : ""}
+    <button class="btn small ghost" data-a="close">${isHost()?"Luk spillet for alle":"Forlad spillet"}</button>
     <button class="btn small" data-a="menu">Tilbage</button>
+  </div></div>`;
+}
+
+function callView(){
+  return `<div class="scrim" data-a="call"></div>
+  <div class="sheet" role="dialog" aria-label="Hvem brød reglen"><div class="sheet-in">
+    <div class="label">Hvem brød reglen? De drikker ${tar(S())}</div>
+    <div class="voters">${online().map(p => `<button class="choice" ${sidej({k:"broke", id:p.id})}><span class="em">${avatar(p)}</span>${esc(p.name)}</button>`).join("")}</div>
+    <button class="btn small" data-a="call">Fortryd</button>
   </div></div>`;
 }
 
@@ -1193,19 +1827,42 @@ function menuView(){
    ============================================================ */
 function readHomeInputs(){
   const n = $("#name"); if(n){ me.name = clean(n.value, 16); store.set("skaal-name", me.name) }
+  const c = $("#code"); if(c) ui.code = clean(c.value, 4).toUpperCase();
   store.set("skaal-emoji", me.emoji);
 }
+document.addEventListener("change", e => {
+  if(e.target.id === "photo" && e.target.files && e.target.files[0]){ readHomeInputs(); processPhoto(e.target.files[0]) }
+});
+function parseJ(s){ try{ return JSON.parse(s) }catch(e){ return null } }
 document.addEventListener("pointerdown", e => {
   if(e.target.closest("[data-mg]")){ e.preventDefault(); mgTap() }
 });
 document.addEventListener("click", e => {
-  const em = e.target.closest("[data-emoji]");
-  if(em){ readHomeInputs(); me.emoji = em.dataset.emoji; store.set("skaal-emoji", me.emoji); document.querySelectorAll("[data-emoji]").forEach(b => b.setAttribute("aria-pressed", b.dataset.emoji === me.emoji)); return }
-  const mq = e.target.closest("[data-mq]");
-  if(mq){ mathAnswer(mq.dataset.mq); return }
-  const ac = e.target.closest("[data-act]");
+  const t = e.target;
+  const em = t.closest("[data-emoji]");
+  if(em){ readHomeInputs(); me.emoji = em.dataset.emoji; me.photo = ""; store.set("skaal-emoji", me.emoji); store.del("skaal-photo"); return renderHome() }
+  if(t.closest('[data-a="nophoto"]')){ readHomeInputs(); me.photo = ""; store.del("skaal-photo"); return renderHome() }
+  const sd = t.closest("[data-side]");
+  if(sd){ const v = parseJ(sd.dataset.side); if(v) side(v); ui.call = false; return render() }
+  const aj = t.closest("[data-actj]");
+  if(aj){ const v = parseJ(aj.dataset.actj); if(v) act(v); return }
+  const ac = t.closest("[data-act]");
   if(ac){ act(ac.dataset.act); return }
-  const b = e.target.closest("[data-a]"); if(!b) return;
+  const mf = t.closest("[data-mfk]");
+  if(mf){
+    const [k, i] = mf.dataset.mfk.split(":"); const idx = +i;
+    ["m","f","k"].forEach(x => { if(mfkSel[x] === idx) mfkSel[x] = null });
+    mfkSel[k] = idx; buzz(10); return render();
+  }
+  const kpb = t.closest("[data-kp]");
+  if(kpb){
+    const k = kpb.dataset.kp;
+    if(k === "del") kp.v = kp.v.slice(0,-1);
+    else if(k === "ok"){ if(kp.v){ const g = +kp.v; kp.v = ""; act({g}); return render() } }
+    else if(kp.v.length < 5) kp.v += k;
+    buzz(8); return render();
+  }
+  const b = t.closest("[data-a]"); if(!b) return;
   const a = b.dataset.a, v = b.dataset.v;
   if(a === "host" || a === "join" || a === "rejoin" || a === "resume"){
     readHomeInputs();
@@ -1219,7 +1876,16 @@ document.addEventListener("click", e => {
   }
   if(a === "cancel"){ teardown(); role=null; state=null; ui={...ui, screen:"home"}; return render() }
   if(a === "menu"){ ui.menu = !ui.menu; return render() }
+  if(a === "call"){ ui.call = !ui.call; return render() }
   if(a === "close") return closeGame();
+  if(a === "peek"){ peek.on = !peek.on; return render() }
+  if(a === "mfksend"){ act({m:mfkSel.m, f:mfkSel.f, k:mfkSel.k}); return }
+  if(a === "sentsend" || a === "fullsend"){
+    const r = state.round, el = document.getElementById((a === "sentsend" ? "sent-" : "full-") + r.n);
+    const txt = clean(el && el.value, 120); if(!txt) return;
+    el.value = "";
+    act(a === "sentsend" ? {guess:txt} : {full:txt}); return;
+  }
   if(a === "copy"){
     const url = joinUrl();
     if(navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast("Link kopieret"), () => toast(url)); else toast(url);
@@ -1229,7 +1895,10 @@ document.addEventListener("click", e => {
   hostCmd(a, v);
 });
 document.addEventListener("keydown", e => {
-  if(e.key === "Enter" && e.target.id === "code") $('[data-a="join"]')?.click();
+  if(e.key !== "Enter") return;
+  if(e.target.id === "code") $('[data-a="join"]')?.click();
+  if(e.target.id && e.target.id.startsWith("sent-")) $('[data-a="sentsend"]')?.click();
+  if(e.target.id && e.target.id.startsWith("full-")) $('[data-a="fullsend"]')?.click();
 });
 document.addEventListener("input", e => {
   if(e.target.id === "code"){ const p = e.target.selectionStart; e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g,""); try{e.target.setSelectionRange(p,p)}catch(_){} }
