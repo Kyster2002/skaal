@@ -216,6 +216,53 @@ img.av{width:1.15em;height:1.15em;border-radius:50%;object-fit:cover;vertical-al
 .mfkbtns button{min-width:56px;height:44px;border-radius:12px;background:var(--bg);border:2px solid var(--line);font-weight:800;font-size:13px;padding:0 8px}
 .mfkbtns button[aria-pressed="true"]{background:var(--pink);color:var(--ink);border-color:var(--pink)}
 .counter{font-family:var(--display);font-size:72px;line-height:1;text-align:center;font-variant-numeric:tabular-nums}
+/* Roulette: rigtige rouletfarver, guldkant */
+.wheel{display:block;width:100%;max-width:320px;margin:0 auto}
+.wheel .rim{fill:#4A2A12;stroke:#E8C77A;stroke-width:3}
+.wheel .pk{stroke:#E8C77A;stroke-width:.6}
+.wheel .pk.red{fill:#D7263D}
+.wheel .pk.black{fill:#1B1B1F}
+.wheel .pk.green{fill:#1E9E5A}
+.wheel text{fill:#fff;font-size:8.5px;font-weight:800;text-anchor:middle;dominant-baseline:central;font-family:var(--body)}
+.wheel .hub{fill:#3A2414;stroke:#E8C77A;stroke-width:1.5}
+.wheel .hub2{fill:#E8C77A}
+.wheel .ptr{fill:var(--foam);stroke:var(--ink);stroke-width:1.5}
+.pip{display:inline-block;width:.8em;height:.8em;border-radius:50%;margin:0 3px;vertical-align:-.05em}
+.pip.red{background:#D7263D}
+.pip.black{background:#1B1B1F;box-shadow:0 0 0 1px #888}
+.pip.green{background:#1E9E5A}
+.pip.big{width:auto;height:auto;min-width:72px;padding:6px 16px;border-radius:999px;font-family:var(--display);font-size:40px;color:#fff;text-align:center;margin:0}
+.rouresult{display:flex;align-items:center;justify-content:center;gap:12px;font-family:var(--display);font-size:30px}
+.choice.colorbet{color:#fff;min-height:64px}
+.choice.colorbet.red,.choice.colorbet.red[aria-pressed="true"]{background:#D7263D;border-color:#D7263D}
+.choice.colorbet.black,.choice.colorbet.black[aria-pressed="true"]{background:#1B1B1F;border-color:#555}
+.choice.colorbet.green,.choice.colorbet.green[aria-pressed="true"]{background:#1E9E5A;border-color:#1E9E5A}
+.choice.colorbet[aria-pressed="true"]{color:#fff;outline:3px solid var(--foam);outline-offset:2px}
+/* Hexagon: fliser over lava */
+.hexboard{display:block;width:100%;max-width:400px;margin:0 auto;background:radial-gradient(circle at 50% 60%, rgba(255,77,61,.35), transparent 70%);border-radius:24px}
+.hex{cursor:pointer;transform-box:fill-box;transform-origin:center;transition:transform .55s cubic-bezier(.5,0,.9,.5),opacity .55s ease-in}
+.hex polygon{fill:var(--amber);stroke:#8A4A00;stroke-width:1.2}
+.hex.taken{cursor:default}
+.hex.taken polygon{fill:var(--violet)}
+.hex.mine polygon{fill:var(--pink);stroke:#fff;stroke-width:2}
+.hex text{font-size:13px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.hex image{pointer-events:none}
+.hex.wobble{animation:wob .12s linear infinite}
+@keyframes wob{0%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}100%{transform:rotate(-5deg)}}
+.hex.fallen{transform:translateY(30px) scale(.2);opacity:0;animation:none}
+.hex.survivor polygon{stroke:#fff;stroke-width:2.5}
+/* Tegn efter streg: lyst papir, stiplet omrids, pink streg */
+.trsvg{display:block;width:100%;aspect-ratio:1;background:#FFF8EE;border-radius:20px}
+.trsvg .ol{fill:none;stroke:#B9A79A;stroke-width:3;stroke-dasharray:7 7;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
+.trsvg .st{fill:none;stroke:#E8336B;stroke-width:5;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
+.tracepad{max-width:440px;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}
+.thumbs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.thumb{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.thumb.first{border-color:var(--amber)}
+.thumb .trsvg{border-radius:12px}
+.thumb .trsvg .st{stroke-width:3}
+.thumb .meta{display:flex;justify-content:space-between;gap:6px;font-size:13px;font-variant-numeric:tabular-nums}
+.thumb .meta b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* Resultat */
 .result{display:flex;flex-direction:column;gap:8px}
@@ -472,6 +519,58 @@ const PHRASES = [
   [2,"KYS MIG IGEN"],[2,"HVEM SKAL MED HJEM I AFTEN"],[3,"WALK OF SHAME"]
 ];
 const ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ".split("");
+/* Tegn efter streg: [navn, SVG-sti i et 100×100 felt]. Hver tegning bruges højst én gang pr. spil. */
+const DRAWINGS = [
+  ["Hjerte","M50 85 C20 65 8 45 18 28 C28 12 45 16 50 30 C55 16 72 12 82 28 C92 45 80 65 50 85 Z"],
+  ["Stjerne","M50 10 L61 38 L91 38 L67 56 L76 86 L50 68 L24 86 L33 56 L9 38 L39 38 Z"],
+  ["Hus","M20 50 L50 20 L80 50 L80 85 L20 85 Z M42 85 L42 65 L58 65 L58 85"],
+  ["Fisk","M15 50 C30 25 60 25 75 50 C60 75 30 75 15 50 Z M75 50 L92 35 L92 65 Z"],
+  ["Sky","M25 70 C10 70 10 50 25 48 C25 32 45 28 52 40 C58 28 80 30 78 48 C92 48 92 70 78 70 Z"],
+  ["Måne","M60 12 C35 15 20 35 22 55 C25 78 48 92 72 85 C52 80 40 62 42 45 C44 28 52 18 60 12 Z"],
+  ["Ølkrus","M28 20 L72 20 L68 88 L32 88 Z M71 35 C88 35 88 65 69 65"],
+  ["Vinglas","M30 12 L70 12 C72 40 62 55 50 55 C38 55 28 40 30 12 Z M50 55 L50 85 M35 88 L65 88"],
+  ["Flaske","M42 10 L58 10 L58 28 C70 34 70 40 70 48 L70 90 L30 90 L30 48 C30 40 30 34 42 28 Z"],
+  ["Cocktail","M15 18 L85 18 L50 55 Z M50 55 L50 85 M32 88 L68 88"],
+  ["Æble","M50 30 C35 18 15 25 18 50 C20 75 38 92 50 82 C62 92 80 75 82 50 C85 25 65 18 50 30 Z M50 30 C50 20 55 12 62 10"],
+  ["Juletræ","M50 10 L80 50 L65 50 L85 75 L15 75 L35 50 L20 50 Z M45 75 L45 90 L55 90 L55 75"],
+  ["Blad","M20 80 C20 40 50 15 85 15 C85 50 60 80 20 80 Z M20 80 L65 35"],
+  ["Blomst","M50 18 A11 11 0 0 1 69 29 A11 11 0 0 1 69 51 A11 11 0 0 1 50 62 A11 11 0 0 1 31 51 A11 11 0 0 1 31 29 A11 11 0 0 1 50 18 Z M42 40 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0 M50 62 L50 92 M50 80 C58 70 68 70 72 74 C66 82 56 82 50 80"],
+  ["Svamp","M15 50 C15 18 85 18 85 50 Z M38 50 L35 85 L65 85 L62 50"],
+  ["Isvaffel","M30 45 L50 90 L70 45 Z M30 45 C25 25 40 15 50 22 C60 15 75 25 70 45"],
+  ["Krone","M15 75 L15 30 L32 50 L50 20 L68 50 L85 30 L85 75 Z"],
+  ["Pil","M10 45 L60 45 L60 30 L90 50 L60 70 L60 55 L10 55 Z"],
+  ["Lyn","M55 8 L25 55 L45 55 L38 92 L75 40 L55 40 L65 8 Z"],
+  ["Diamant","M25 30 L75 30 L90 45 L50 90 L10 45 Z M10 45 L90 45"],
+  ["Raket","M50 8 C65 20 65 50 62 70 L38 70 C35 50 35 20 50 8 Z M38 58 L25 78 L38 72 M62 58 L75 78 L62 72 M44 70 L50 85 L56 70"],
+  ["Sejlbåd","M15 70 L85 70 L72 85 L28 85 Z M50 70 L50 12 L80 62 L50 62"],
+  ["Kat","M25 40 L25 15 L40 30 C46 28 54 28 60 30 L75 15 L75 40 C82 55 75 80 50 82 C25 80 18 55 25 40 Z"],
+  ["Spøgelse","M25 85 L25 40 C25 15 75 15 75 40 L75 85 L67 77 L58 85 L50 77 L42 85 L33 77 Z"],
+  ["Ballon","M50 12 C72 12 80 32 76 48 C72 64 58 72 50 72 C42 72 28 64 24 48 C20 32 28 12 50 12 Z M50 72 C45 80 55 85 50 95"],
+  ["Klokke","M50 12 C30 15 28 40 26 60 L18 72 L82 72 L74 60 C72 40 70 15 50 12 Z M44 72 C44 82 56 82 56 72"],
+  ["Kuvert","M12 25 L88 25 L88 75 L12 75 Z M12 25 L50 52 L88 25"],
+  ["Spiral","M50 50 C50 45 56 45 56 50 C56 58 44 58 44 50 C44 38 62 38 62 50 C62 66 38 66 38 50 C38 30 70 30 70 50 C70 74 30 74 30 50 C30 22 78 22 78 50"],
+  ["Node","M30 78 C30 70 42 68 45 75 C48 82 30 86 30 78 Z M45 75 L45 15 L72 25"],
+  ["Paraply","M10 50 C10 20 90 20 90 50 C80 44 70 44 63 50 C57 44 43 44 37 50 C30 44 20 44 10 50 Z M50 50 L50 82 C50 90 40 90 40 82"],
+  ["Snemand","M38 22 a12 12 0 1 0 24 0 a12 12 0 1 0 -24 0 M30 58 a20 20 0 1 0 40 0 a20 20 0 1 0 -40 0"],
+  ["Pizzastykke","M50 90 L15 20 C35 10 65 10 85 20 Z M22 32 C40 24 60 24 78 32"],
+  ["Høj hat","M15 75 L85 75 L85 68 L68 68 L68 20 L32 20 L32 68 L15 68 Z"],
+  ["Banan","M15 30 C20 75 70 90 88 60 C80 65 40 70 25 28 Z"],
+  ["Kaktus","M42 90 L42 20 C42 10 58 10 58 20 L58 90 Z M42 55 L28 55 L28 35 C28 30 22 30 22 35 L22 60 L42 60 M58 45 L72 45 L72 28 C72 23 78 23 78 28 L78 50 L58 50"],
+  ["Anker","M44 12 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0 M50 18 L50 82 M38 30 L62 30 M20 60 C25 85 75 85 80 60"],
+  ["Timeglas","M28 12 L72 12 L72 18 L54 50 L72 82 L72 88 L28 88 L28 82 L46 50 L28 18 Z"],
+  ["Sommerfugl","M50 30 L50 75 M50 45 C35 15 10 20 15 45 C18 58 40 55 50 50 C40 60 20 70 30 85 C40 92 50 75 50 65 M50 45 C65 15 90 20 85 45 C82 58 60 55 50 50 C60 60 80 70 70 85 C60 92 50 75 50 65"],
+  ["Knogle","M25 42 C15 30 28 22 32 34 L68 34 C72 22 85 30 75 42 C85 54 72 62 68 52 L32 52 C28 62 15 54 25 42 Z"],
+  ["Kirsebær","M18 72 a12 12 0 1 0 24 0 a12 12 0 1 0 -24 0 M52 76 a12 12 0 1 0 24 0 a12 12 0 1 0 -24 0 M30 60 C35 40 50 25 62 15 M64 64 C62 45 62 30 62 15"]
+];
+const TRACE_MS = 25000;   // tid til at tegne
+/* Roulette: europæisk hjul med 37 lommer i rigtig rækkefølge */
+const WHEEL = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+const REDS = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+const pocketColor = n => n === 0 ? "green" : REDS.has(n) ? "red" : "black";
+const COLOR_DK = {red:"rød", black:"sort", green:"grøn"};
+const SPIN_MS = 6000, GREEN_PAYS = 5;
+/* Hexagon: fliser falder én ad gangen */
+const HEX_STEP = 380;
 /* Idé 12: handlinger i kæden */
 const CHAIN_ACTIONS = ["Klap én gang","Bank i bordet","Råb 'Skål!'","Løft dit glas","Knips","Rejs dig op","Sig 'Hej'","Stamp i gulvet","Vink","Peg på loftet"];
 
@@ -843,7 +942,7 @@ function hostCmd(cmd, arg){
   }
   if(cmd === "rounds" && ROUND_CHOICES.includes(+arg)){ state.maxRounds = +arg; commit() }
   if(cmd === "end"){ state.phase = "end"; state.round = null; state.event = null; state.trial = null; commit() }
-  if(cmd === "again"){ state.players.forEach(p => { p.sips = 0; p.wins = 0 }); Object.assign(state, {phase:"lobby", round:null, n:0, count:{}, seen:{}, buddy:null, missions:[], event:null, trial:null}); commit() }
+  if(cmd === "again"){ state.players.forEach(p => { p.sips = 0; p.wins = 0 }); Object.assign(state, {phase:"lobby", round:null, n:0, used:{}, count:{}, seen:{}, buddy:null, missions:[], event:null, trial:null}); commit() }
   if(cmd === "kick") removePlayer(arg);
   if(cmd === "hostact") hostAct(myId, state.round && state.round.n, arg);
   ui.menu = false; render();
@@ -1468,6 +1567,142 @@ const TYPES = {
     }
   },
 
+  /* ---------- Roulette ---------- */
+  roulette:{
+    name:"Roulette", desc:"Sats 1-3 tår på rød, sort eller grøn", w:1, min:1,
+    start(r){ r.spin = null },
+    act(r, pid, v){
+      if(v === "spin" && pid === myId && !r.spin && Object.keys(r.answers).length){ TYPES.roulette.spin(r); return true }
+      if(r.spin || !isObj(v) || ![1,2,3].includes(v.stake) || !["red","black","green"].includes(v.color)) return false;
+      r.answers[pid] = {stake:v.stake, color:v.color};
+      if(onlineIds().every(id => r.answers[id])) TYPES.roulette.spin(r);   // alle har satset: hjulet snurrer
+      return true;
+    },
+    /* Værten trækker tallet. Alle telefoner animerer hjulet hen til det samme tal */
+    spin(r){
+      r.spin = {start:Date.now() + 400, idx:rnd(WHEEL.length), turns:5 + rnd(3)};
+      const n = r.n;
+      setTimeout(() => { if(state.round && state.round.n === n && state.phase === "round") doReveal() }, 400 + SPIN_MS + 700);
+    },
+    reveal(r){
+      if(!r.spin) return {drink:[], give:[]};
+      const num = WHEEL[r.spin.idx], col = pocketColor(num), give = [], drink = [];
+      Object.entries(r.answers).forEach(([id,b]) => {
+        if(!player(id)) return;
+        if(b.color === col) give.push({id, s: col === "green" ? b.stake * GREEN_PAYS : b.stake});
+        else drink.push({id, s:b.stake});
+      });
+      return {num, col, give, drink};
+    },
+    bets(r){
+      const list = Object.entries(r.answers).filter(([id]) => player(id));
+      if(!list.length) return "";
+      return `<div class="progress">${list.map(([id,b]) => `<span class="dot"><span class="e">${emojiOf(id)}</span>${nameOf(id)} · ${b.stake} på <span class="pip ${b.color}"></span>${COLOR_DK[b.color]}</span>`).join("")}</div>`;
+    },
+    view(r){
+      const wheel = wheelSvg(r.spin);
+      if(r.spin) return wheel + `<p class="waiting">Hjulet snurrer…</p>` + TYPES.roulette.bets(r);
+      if(rouSel.n !== r.n) rouSel = {n:r.n, stake:null, color:null};
+      const mine = r.answers[myId], n = Object.keys(r.answers).length;
+      const hostSpin = isHost() && n ? `<button class="btn small" data-a="hostact" data-v="spin">Snur hjulet nu (${n} har satset)</button>` : "";
+      if(mine) return wheel + `<div class="drinkhead" style="text-align:center">Du satser ${tar(mine.stake)} på ${COLOR_DK[mine.color]}</div>
+        <p class="waiting">Hjulet snurrer, når alle har satset.</p>` + TYPES.roulette.bets(r) + hostSpin;
+      return wheel + `<div class="label">Hvor mange tår satser du?</div>
+        <div class="seg">${[1,2,3].map(s => `<button data-rou="stake:${s}" aria-pressed="${rouSel.stake===s}">${s}<small>${s === 1 ? "tår" : "tår"}</small></button>`).join("")}</div>
+        <div class="label">På hvilken farve?</div>
+        <div class="choices" style="grid-template-columns:1fr 1fr 1fr">${["red","black","green"].map(c => `<button class="choice colorbet ${c}" data-rou="color:${c}" aria-pressed="${rouSel.color===c}">${COLOR_DK[c][0].toUpperCase() + COLOR_DK[c].slice(1)}</button>`).join("")}</div>
+        <p class="hint">Rammer du farven, må du dele din indsats ud. Grøn (0) er sjælden og betaler ${GREEN_PAYS} gange indsatsen. Taber du, drikker du selv indsatsen.</p>
+        <button class="btn primary" data-a="rouplace" ${rouSel.stake && rouSel.color ? "" : "disabled"}>Placér indsats</button>` + TYPES.roulette.bets(r) + hostSpin;
+    },
+    result(r, res){
+      if(res.num === undefined) return card("red", "Roulette", `<h2 class="prompt sm">Ingen satsede.</h2>`);
+      return wheelSvg(r.spin, true) + `<div class="rouresult"><span class="pip big ${res.col}">${res.num}</span><span>${COLOR_DK[res.col][0].toUpperCase() + COLOR_DK[res.col].slice(1)}</span></div>` +
+        (res.give.length ? `<div class="label">Må dele tår ud</div><div class="result">${res.give.map(g => `<div class="res win"><span class="e">${emojiOf(g.id)}</span><span class="n">${nameOf(g.id)}</span><span class="v">deler ${tar(g.s)} ud</span></div>`).join("")}</div>` : "");
+    }
+  },
+
+  /* ---------- Hexagon ---------- */
+  hex:{
+    name:"Hexagon", desc:"Vælg en flise, der ikke falder", w:1, min:2,
+    start(r, pool){ r.tiles = hexTiles(pool.length > 10 ? 3 : 2); r.fall = null },
+    act(r, pid, v){
+      if(v === "go" && pid === myId && !r.fall && Object.keys(r.answers).length){ TYPES.hex.go(r); return true }
+      if(r.fall || !isObj(v) || !Number.isInteger(v.tile) || v.tile < 0 || v.tile >= r.tiles.length) return false;
+      if(Object.entries(r.answers).some(([id,t]) => t === v.tile && id !== pid)) return false;   // en flise pr. spiller
+      r.answers[pid] = v.tile;
+      const ids = onlineIds();
+      if(ids.length >= 2 && ids.every(id => r.answers[id] !== undefined)) TYPES.hex.go(r);
+      return true;
+    },
+    /* En tilfældig optaget flise overlever. De andre falder i tilfældig rækkefølge, indtil kun den er tilbage */
+    go(r){
+      const occupied = new Set(Object.values(r.answers));
+      const survivor = pick([...occupied]);
+      let seq = shuffle(r.tiles.map((_,i) => i).filter(i => i !== survivor));
+      let last = -1; seq.forEach((t,i) => { if(occupied.has(t)) last = i });
+      seq = seq.slice(0, Math.max(last + 1, Math.min(4, seq.length)));
+      r.fall = {start:Date.now() + 700, seq, survivor};
+      const n = r.n;
+      setTimeout(() => { if(state.round && state.round.n === n && state.phase === "round") doReveal() }, 700 + seq.length * HEX_STEP + 1200);
+    },
+    reveal(r){
+      if(!r.fall) return {drink:[]};
+      const A = r.answers, ids = Object.keys(A).filter(id => player(id));
+      const win = ids.filter(id => A[id] === r.fall.survivor);
+      const drink = ids.filter(id => A[id] !== r.fall.survivor).map(id => ({id, s:1}))
+        .concat(onlineIds().filter(id => A[id] === undefined).map(id => ({id, s:1})));
+      return {win, drink};
+    },
+    view(r){
+      if(r.fall) return hexBoard(r) + `<p class="waiting">Fliserne falder…</p>`;
+      const mine = r.answers[myId], n = Object.keys(r.answers).length;
+      return `<div class="drinkhead" style="font-size:24px;margin:0">${mine === undefined ? "Tryk på en flise" : "Godt valg? Du kan stadig skifte"}</div>` + hexBoard(r) +
+        `<p class="hint">Fliserne falder i tilfældig rækkefølge. Falder din, drikker du 1 tår. Den sidste, der står tilbage, vinder et 🏆 og må dele 2 tår ud. Der kan kun stå én på hver flise.</p>` +
+        progress(onlineIds(), id => r.answers[id] !== undefined) +
+        (isHost() && n ? `<button class="btn small" data-a="hostact" data-v="go">Lad fliserne falde nu</button>` : "");
+    },
+    result(r, res){
+      return hexBoard(r, true) + `<div class="drinkhead" style="text-align:center">${res.win.length ? `${res.win.map(nameOf).join(" og ")} overlevede! 🏆` : "Ingen valgte en flise"}</div>` +
+        (res.win.length ? `<p class="hint" style="text-align:center">${res.win.map(nameOf).join(" og ")} må dele 2 tår ud.</p>` : "");
+    }
+  },
+
+  /* ---------- Tegn efter streg ---------- */
+  trace:{
+    name:"Tegn efter streg", desc:"Mest præcis vinder · 40 tegninger", w:1.2, min:1,
+    can: () => (state.used.trace || []).length < DRAWINGS.length,   // ingen tegning gentages i samme spil
+    start(r){
+      const used = state.used.trace = state.used.trace || [];
+      const i = pick(DRAWINGS.map((_,k) => k).filter(k => !used.includes(k)));
+      used.push(i); r.drawing = i; r.limit = 3000 + TRACE_MS + 5000;
+    },
+    act(r, pid, v){
+      if(!isObj(v) || typeof v.s !== "number" || !isFinite(v.s) || r.answers[pid] !== undefined) return false;
+      const p = typeof v.p === "string" && v.p.length <= 6000 && /^[0-9,| ]*$/.test(v.p) ? v.p : "";
+      r.answers[pid] = {s:Math.max(0, Math.min(100, Math.round(v.s))), p};
+      return true;
+    },
+    done: allOnlineAnswered,
+    /* Placering efter præcision. Nr. 1 vinder, og alle andre drikker én tår pr. plads under nr. 1 */
+    reveal(r){
+      const A = r.answers, ids = Object.keys(A).filter(id => player(id)).sort((a,b) => A[b].s - A[a].s);
+      const places = []; let place = 0, prev = null;
+      ids.forEach((id,i) => { if(A[id].s !== prev){ place = i + 1; prev = A[id].s } places.push({id, place}) });
+      const asleep = onlineIds().filter(id => A[id] === undefined);
+      const drink = places.filter(o => o.place > 1).map(o => ({id:o.id, s:o.place - 1}))
+        .concat(asleep.map(id => ({id, s:ids.length})));
+      return {places, asleep, drink, win: places.filter(o => o.place === 1 && A[o.id].s > 0).map(o => o.id)};
+    },
+    result(r, res){
+      const D = DRAWINGS[r.drawing], A = r.answers;
+      return card("teal", "Tegn efter streg", `<h2 class="prompt">${res.win.length ? `${res.win.map(nameOf).join(" og ")} vandt!` : "Ingen ramte stregerne"}</h2>
+          <div class="who">Tegningen var: ${esc(D[0])}</div><p>Nr. 2 drikker 1 tår, nr. 3 drikker 2 tår, og så videre.</p>`) +
+        `<div class="thumbs">${res.places.map(o => `<div class="thumb ${o.place===1?"first":""}">${traceSvg(D[1], decodeStrokes(A[o.id].p))}
+          <div class="meta"><b>${o.place}. ${emojiOf(o.id)} ${nameOf(o.id)}</b><span>${A[o.id].s} %</span></div></div>`).join("")}
+          ${res.asleep.map(id => `<div class="thumb">${traceSvg(D[1], [])}<div class="meta"><b>${emojiOf(id)} ${nameOf(id)}</b><span>Tegnede ikke</span></div></div>`).join("")}</div>`;
+    }
+  },
+
   reflex:{
     name:"Hurtigste finger", desc:"Tryk når skærmen er grøn", w:0.8, min:1,
     start(r){ r.delay = 1500 + rnd(4000); r.limit = 3000 + r.delay + 6000 },
@@ -1633,14 +1868,14 @@ function side(v){
    ============================================================ */
 let mfkSel = {n:-1}, kp = {n:-1}, peek = {n:-1};
 let mg = {n:-1};
-const MG_TYPES = ["reflex","tap","stop"];
+const MG_TYPES = ["reflex","tap","stop","trace"];
 function clearMg(){ (mg.timers || []).forEach(clearTimeout) }
 function mgLater(fn, ms){ const n = mg.n; mg.timers.push(setTimeout(() => { if(mg.n === n) fn() }, ms)) }
 function ensureMg(r){
   if(mg.n === r.n) return;
   clearMg();
   mg = {n:r.n, type:r.type, phase:"count", start:performance.now() + 3000, timers:[]};
-  if(r.answers[myId] !== undefined){ mg.phase = "done"; mg.score = r.answers[myId]; return }
+  if(r.answers[myId] !== undefined){ mg.phase = "done"; mg.score = isObj(r.answers[myId]) ? r.answers[myId].s : r.answers[myId]; return }
   mgLater(render, 1000); mgLater(render, 2000);
   mgLater(() => beginMg(r), 3000);
 }
@@ -1653,7 +1888,148 @@ function beginMg(r){
   }
   if(r.type === "tap"){ mg.phase = "play"; mg.taps = 0; mgLater(() => finishMg(mg.taps), 5000) }
   if(r.type === "stop"){ mg.phase = "play"; mg.target = r.target; mgLater(() => { if(mg.phase === "play") finishMg(9999) }, r.target + 5000) }
+  if(r.type === "trace"){ mg.phase = "play"; trace = {n:r.n, strokes:[], cur:null, drawing:false}; mgLater(finishTrace, TRACE_MS) }
   buzz(30); render();
+}
+
+/* ---- Roulette: hjulet tegnes som SVG og drejes ud fra værtens starttid ---- */
+let rouSel = {n:-1};
+const WSTEP = 360 / WHEEL.length;
+function wheelAngle(spin, final){
+  if(!spin) return 0;
+  const fin = -(spin.turns * 360 + spin.idx * WSTEP);   // lommen med tallet ender under pilen
+  if(final) return fin;
+  const p = Math.max(0, Math.min(1, (Date.now() - L(spin.start)) / SPIN_MS));
+  return fin * (1 - Math.pow(1 - p, 3));
+}
+function wheelSvg(spin, final){
+  const pt = (a, rad) => [(Math.sin(a*Math.PI/180)*rad).toFixed(2), (-Math.cos(a*Math.PI/180)*rad).toFixed(2)];
+  const seg = WHEEL.map((num,i) => {
+    const a0 = (i - .5) * WSTEP, a1 = (i + .5) * WSTEP;
+    const [x0,y0] = pt(a0,94), [x1,y1] = pt(a1,94), [x2,y2] = pt(a1,62), [x3,y3] = pt(a0,62), [tx,ty] = pt(i*WSTEP,79);
+    return `<path class="pk ${pocketColor(num)}" d="M${x0} ${y0} A94 94 0 0 1 ${x1} ${y1} L${x2} ${y2} A62 62 0 0 0 ${x3} ${y3} Z"/><text x="${tx}" y="${ty}" transform="rotate(${(i*WSTEP).toFixed(2)} ${tx} ${ty})">${num}</text>`;
+  }).join("");
+  return `<svg class="wheel" viewBox="-104 -110 208 214" aria-label="Rouletthjul"><circle r="100" class="rim"/>
+    <g id="wheel" transform="rotate(${wheelAngle(spin, final).toFixed(2)})">${seg}<circle r="62" class="hub"/><circle r="16" class="hub2"/></g>
+    <polygon class="ptr" points="-8,-108 8,-108 0,-90"/></svg>`;
+}
+
+/* ---- Hexagon: sekskantet bræt af fliser ---- */
+function hexTiles(R){ const t = []; for(let q=-R;q<=R;q++) for(let r=Math.max(-R,-q-R); r<=Math.min(R,-q+R); r++) t.push([q,r]); return t }
+const HS = 20;
+function hexBoard(r, final){
+  const owner = {}; Object.entries(r.answers).forEach(([id,t]) => { if(player(id)) owner[t] = id });
+  const f = r.fall, fallAt = {}, now = Date.now();
+  if(f) f.seq.forEach((t,k) => fallAt[t] = L(f.start) + k * HEX_STEP);
+  const pos = r.tiles.map(([q,rr]) => [HS*Math.sqrt(3)*(q + rr/2), HS*1.5*rr]);
+  const xs = pos.map(p => p[0]), ys = pos.map(p => p[1]), pad = HS + 6;
+  const vb = [Math.min(...xs)-pad, Math.min(...ys)-pad, Math.max(...xs)-Math.min(...xs)+2*pad, Math.max(...ys)-Math.min(...ys)+2*pad].map(v => v.toFixed(1)).join(" ");
+  const poly = (x,y) => Array.from({length:6}, (_,k) => { const a = Math.PI/180*(60*k - 30); return (x + HS*.93*Math.cos(a)).toFixed(1) + "," + (y + HS*.93*Math.sin(a)).toFixed(1) }).join(" ");
+  const tiles = r.tiles.map((_,i) => {
+    const [x,y] = pos[i], id = owner[i], p = id && player(id);
+    const fallen = fallAt[i] !== undefined && (final || now >= fallAt[i]);
+    const cls = ["hex", id === myId ? "mine" : "", id && id !== myId ? "taken" : "", fallen ? "fallen" : "", f && final && i === f.survivor ? "survivor" : ""].join(" ");
+    const av = !p ? "" : okPhoto(p.photo) ? `<image href="${p.photo}" x="${(x-9).toFixed(1)}" y="${(y-9).toFixed(1)}" width="18" height="18" clip-path="url(#avclip)"/>` : `<text x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}">${esc(p.emoji)}</text>`;
+    return `<g class="${cls}" data-hex="${i}" ${fallAt[i] !== undefined ? `data-fall="${fallAt[i]}"` : ""}><polygon points="${poly(x,y)}"/>${av}</g>`;
+  }).join("");
+  return `<svg class="hexboard" viewBox="${vb}" aria-label="Fliser"><defs><clipPath id="avclip" clipPathUnits="objectBoundingBox"><circle cx=".5" cy=".5" r=".5"/></clipPath></defs>${tiles}</svg>`;
+}
+
+/* ---- Tegn efter streg: tegningen ligger lokalt i koordinater 0-1000 ---- */
+let trace = {n:-1, strokes:[], cur:null, drawing:false};
+const SVGNS = "http://www.w3.org/2000/svg";
+const ptsAttr = s => s.map(p => p[0] + "," + p[1]).join(" ");
+function traceSvg(d, strokes, live){
+  return `<svg class="trsvg ${live ? "tracepad" : ""}" ${live ? 'id="tracepad"' : ""} viewBox="0 0 1000 1000" aria-label="Tegneflade">
+    <path class="ol" d="${esc(d)}" transform="scale(10)"/><g ${live ? 'id="strokes"' : ""}>${strokes.map((s,i) => `<polyline class="st" data-i="${i}" points="${ptsAttr(s)}"/>`).join("")}</g></svg>`;
+}
+function encodeStrokes(strokes){
+  const total = strokes.reduce((a,s) => a + s.length, 0), k = Math.max(1, Math.ceil(total / 350));   // højst ca. 350 punkter sendes
+  return strokes.filter(s => s.length).map(s => ptsAttr(s.filter((_,i) => i % k === 0 || i === s.length - 1))).join("|");
+}
+function decodeStrokes(p){
+  if(typeof p !== "string" || !/^[0-9,| ]*$/.test(p)) return [];
+  return p.split("|").filter(Boolean).map(s => s.split(" ").map(q => q.split(",").map(Number)).filter(q => q.length === 2 && q.every(Number.isFinite)));
+}
+/* Punkter langs omridset, målt med en skjult SVG-sti */
+let traceRef = null;
+function outlinePoints(d, N){
+  if(!traceRef){
+    const svg = document.createElementNS(SVGNS, "svg");
+    svg.setAttribute("width", "0"); svg.setAttribute("height", "0"); svg.style.position = "absolute"; svg.style.visibility = "hidden";
+    traceRef = document.createElementNS(SVGNS, "path"); svg.appendChild(traceRef); document.body.appendChild(svg);
+  }
+  traceRef.setAttribute("d", d);
+  const len = traceRef.getTotalLength(), pts = [];
+  for(let i=0;i<N;i++){ const p = traceRef.getPointAtLength(len * i / (N-1)); pts.push([p.x*10, p.y*10]) }
+  pts.len = len * 10;
+  return pts;
+}
+/* Præcision 0-100: hvor tæt stregerne er på omridset (P), og hvor meget af omridset der er dækket (C) */
+function traceScore(d, strokes){
+  const T = outlinePoints(d, 400), D = [];
+  let inkLen = 0;
+  strokes.forEach(s => s.forEach((p,i) => {
+    if(i === 0) return D.push(p);
+    const q = s[i-1], seg = Math.hypot(p[0]-q[0], p[1]-q[1]), steps = Math.ceil(seg / 8);
+    inkLen += seg;
+    for(let k=1;k<=steps;k++) D.push([q[0] + (p[0]-q[0])*k/steps, q[1] + (p[1]-q[1])*k/steps]);
+  }));
+  if(D.length < 10) return 0;
+  const Ds = D.length > 1500 ? D.filter((_,i) => i % Math.ceil(D.length/1500) === 0) : D;
+  const near = (p, arr) => { let m = Infinity; for(const q of arr){ const dx = p[0]-q[0], dy = p[1]-q[1], v = dx*dx + dy*dy; if(v < m) m = v } return Math.sqrt(m) };
+  const soft = dist => Math.max(0, 1 - Math.max(0, dist - 8) / 27);   // fuld point inden for 0,8 %, nul ved 3,5 % af feltet
+  const P = Ds.reduce((a,p) => a + soft(near(p, T)), 0) / Ds.length;
+  const C = T.reduce((a,p) => a + soft(near(p, Ds)), 0) / T.length;
+  const excess = inkLen / T.len;                     // kruseduller: meget mere streg end omridset
+  const penalty = excess > 1.5 ? 1.5 / excess : 1;
+  const b2 = 2.25;                                   // dækning af hele omridset vægtes lidt højere end præcision
+  return P + C ? Math.round(100 * penalty * (1 + b2)*P*C / (b2*P + C)) : 0;
+}
+function tracePt(e){
+  const svg = $("#tracepad"); if(!svg || !trace.cur) return;
+  const r = svg.getBoundingClientRect();
+  const evs = (e.getCoalescedEvents && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e];
+  for(const ev of evs){
+    if(trace.strokes.reduce((a,s) => a + s.length, 0) > 3000) break;
+    const x = Math.round(Math.max(0, Math.min(1000, (ev.clientX - r.left) / r.width * 1000)));
+    const y = Math.round(Math.max(0, Math.min(1000, (ev.clientY - r.top) / r.height * 1000)));
+    const last = trace.cur[trace.cur.length-1];
+    if(last && Math.hypot(x - last[0], y - last[1]) < 4) continue;
+    trace.cur.push([x, y]);
+  }
+  const g = svg.querySelector("#strokes"), i = String(trace.strokes.length - 1);
+  let pl = g.querySelector(`polyline[data-i="${i}"]`);
+  if(!pl){ pl = document.createElementNS(SVGNS, "polyline"); pl.setAttribute("class", "st"); pl.dataset.i = i; g.appendChild(pl) }
+  pl.setAttribute("points", ptsAttr(trace.cur));
+}
+document.addEventListener("pointerdown", e => {
+  if(!e.target.closest || !e.target.closest("#tracepad") || mg.type !== "trace" || mg.phase !== "play") return;
+  e.preventDefault(); trace.cur = []; trace.strokes.push(trace.cur); trace.drawing = true; tracePt(e);
+});
+document.addEventListener("pointermove", e => { if(trace.drawing){ e.preventDefault(); tracePt(e) } }, {passive:false});
+["pointerup","pointercancel"].forEach(t => document.addEventListener(t, () => { trace.drawing = false }));
+function finishTrace(){
+  const r = state && state.round;
+  if(mg.phase !== "play" || !r || r.type !== "trace") return;
+  trace.drawing = false;
+  let s = 0; try{ s = traceScore(DRAWINGS[r.drawing][1], trace.strokes) }catch(e){}
+  mg.phase = "done"; mg.score = s; clearMg(); mg.timers = [];
+  act({s, p:encodeStrokes(trace.strokes)}); render();
+}
+function traceView(r){
+  ensureMg(r);
+  const D = DRAWINGS[r.drawing];
+  let body;
+  if(mg.phase === "count") body = `<div class="eyebrow"><span class="label">Gør dig klar</span><span class="timer" style="font-size:28px">${Math.max(1, Math.ceil((mg.start - performance.now())/1000))}</span></div>` + traceSvg(D[1], [], false);
+  else if(mg.phase === "play") body = `<div class="eyebrow"><span class="timer" id="tracetime" style="font-size:28px">${TRACE_MS/1000} s</span><button class="btn small" data-a="tracedone" style="width:auto">Færdig</button></div>` + traceSvg(D[1], trace.n === r.n ? trace.strokes : [], true);
+  else {
+    const mine = r.answers[myId], strokes = trace.n === r.n && trace.strokes.length ? trace.strokes : decodeStrokes(mine && mine.p);
+    body = traceSvg(D[1], strokes, false) + `<div class="drinkhead" style="text-align:center">${mg.score} % præcis</div><p class="waiting">Venter på de andre…</p>`;
+  }
+  return `<div class="drinkhead" style="font-size:26px;margin:0">Tegn efter streg: ${esc(D[0])}</div>${body}
+    <p class="hint">Tegn oven i den stiplede streg, så præcist du kan, inden tiden løber ud. Mest præcis vinder et 🏆. Nr. 2 drikker 1 tår, nr. 3 drikker 2 tår, og så videre.</p>` +
+    progress(onlineIds(), id => r.answers[id] !== undefined);
 }
 function finishMg(score){
   if(mg.phase === "done") return;
@@ -1671,6 +2047,7 @@ function mgTap(){
   if(r.type === "stop" && mg.phase === "play") finishMg(Math.round(Math.abs(performance.now() - mg.t0 - r.target)));
 }
 function mgView(r){
+  if(r.type === "trace") return traceView(r);
   ensureMg(r);
   const rules = {
     reflex:"Tryk, så snart feltet bliver grønt. Trykker du for tidligt, drikker du.",
@@ -1691,6 +2068,16 @@ function mgView(r){
     const e = performance.now() - mg.t0;
     if(mg.type === "tap"){ const el = $("#tapn"); const l = $("#tapleft"); if(l) l.textContent = dk(Math.max(0,(5000-e)/1000),1) }
     if(mg.type === "stop"){ const el = $("#sw"); if(el) el.textContent = e < 1500 ? dk(e/1000,2) : "?,??" }
+    if(mg.type === "trace"){ const el = $("#tracetime"); if(el) el.textContent = Math.max(0, Math.ceil((TRACE_MS - e)/1000)) + " s" }
+  }
+  const rr = state && state.round;
+  if(rr && rr.type === "roulette" && rr.spin && state.phase === "round"){ const g = $("#wheel"); if(g) g.setAttribute("transform", `rotate(${wheelAngle(rr.spin).toFixed(2)})`) }
+  if(rr && rr.type === "hex" && rr.fall){
+    const now = Date.now();
+    document.querySelectorAll(".hexboard [data-fall]").forEach(el => {
+      const t = +el.dataset.fall;
+      if(now >= t) el.classList.add("fallen"); else if(now >= t - 350) el.classList.add("wobble");
+    });
   }
   requestAnimationFrame(loop);
 })();
@@ -2012,6 +2399,10 @@ document.addEventListener("click", e => {
   if(aj){ const v = parseJ(aj.dataset.actj); if(v) act(v); return }
   const ac = t.closest("[data-act]");
   if(ac){ act(ac.dataset.act); return }
+  const hx = t.closest("[data-hex]");
+  if(hx){ const r = state && state.round; if(r && r.type === "hex" && !r.fall && state.phase === "round") act({tile:+hx.dataset.hex}); return }
+  const ro = t.closest("[data-rou]");
+  if(ro){ const [k, v] = ro.dataset.rou.split(":"); rouSel[k] = k === "stake" ? +v : v; buzz(10); return render() }
   const mf = t.closest("[data-mfk]");
   if(mf){
     const [k, i] = mf.dataset.mfk.split(":"); const idx = +i;
@@ -2054,6 +2445,8 @@ document.addEventListener("click", e => {
   if(a === "menu"){ ui.menu = !ui.menu; return render() }
   if(a === "call"){ ui.call = !ui.call; return render() }
   if(a === "accuse"){ ui.accuse = !ui.accuse; return render() }
+  if(a === "tracedone") return finishTrace();
+  if(a === "rouplace"){ if(rouSel.stake && rouSel.color) act({stake:rouSel.stake, color:rouSel.color}); return }
   if(a === "close") return closeGame();
   if(a === "peek"){ peek.on = !peek.on; return render() }
   if(a === "mfksend"){ act({m:mfkSel.m, f:mfkSel.f, k:mfkSel.k}); return }
