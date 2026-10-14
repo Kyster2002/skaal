@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Skål!">
-<title>Skål!</title>
+<meta name="apple-mobile-web-app-title" content="Pokaljagt">
+<title>Pokaljagt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Figtree:wght@400;600;800&display=swap" media="print" onload="this.media='all'">
@@ -69,7 +69,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-
 
 /* Hero */
 .hero{padding-top:24px;text-align:center;position:relative}
-.logo{font-family:var(--display);font-size:clamp(72px,24vw,120px);line-height:.9;margin:0;color:var(--amber);text-shadow:0 6px 0 #8A4A00,0 10px 30px rgba(255,176,32,.25);transform:rotate(-4deg);font-weight:400}
+.logo{font-family:var(--display);font-size:clamp(54px,15vw,96px);line-height:.9;margin:0;color:var(--amber);text-shadow:0 6px 0 #8A4A00,0 10px 30px rgba(255,176,32,.25);transform:rotate(-4deg);font-weight:400}
 .logo small{display:block;font-family:var(--body);font-weight:800;font-size:15px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);text-shadow:none;margin-top:18px;transform:rotate(4deg)}
 .bubbles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .bubbles i{position:absolute;bottom:-20px;border-radius:50%;border:2px solid rgba(255,243,226,.35);animation:rise 6s linear infinite}
@@ -305,11 +305,35 @@ img.av{width:1.15em;height:1.15em;border-radius:50%;object-fit:cover;vertical-al
 .toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 72px);transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);background:var(--foam);color:var(--ink);font-weight:800;padding:12px 18px;border-radius:14px;z-index:50;box-shadow:0 8px 30px rgba(0,0,0,.4);text-align:center;pointer-events:none;animation:drop .25s ease-out}
 @keyframes drop{from{transform:translate(-50%,-12px);opacity:0}}
 .foot{font-size:12px;color:var(--muted);text-align:center;opacity:.8;margin:0}
+.btn .btnsub{display:block;font-size:12px;font-weight:600;opacity:.75}
+.btn:has(.btnsub){flex-direction:column;gap:0}
+/* Lobby: spil i grupper */
+.catgroup{display:flex;flex-direction:column;gap:8px}
+.catgroup+.catgroup{border-top:1px solid var(--line);padding-top:12px}
+.cathead{font-weight:800;font-size:15px}
+.cathead small{color:var(--muted);font-weight:600}
+.catbtn{width:auto;min-height:36px;padding:6px 12px;font-size:13px}
+/* Bonusstjerner */
+.bonus{display:grid;gap:10px}
+.bstar{background:var(--bg);border:2px solid var(--amber);border-radius:18px;padding:12px 14px;animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
+.bstar .bt{font-family:var(--display);font-size:22px;color:var(--amber)}
+.bstar .bw{font-weight:800;font-size:18px;margin-top:2px}
+.bstar small{color:var(--muted)}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+/* Party-scenen: fuldskærm over appen, mens et minispil kører. render() rører den ikke */
+#stage{position:fixed;inset:0;z-index:40;background:#160A11;display:flex;flex-direction:column;touch-action:none;overscroll-behavior:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#stage .hud{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 8px;font-weight:800}
+#stage .hud .gt{font-family:var(--display);font-size:20px;color:var(--amber);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#stage .hud .tm{font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
+#stage .hud .sc{font-variant-numeric:tabular-nums;white-space:nowrap}
+#stage canvas{flex:1;width:100%;min-height:0;display:block;touch-action:none}
+.lgcount{font-family:var(--display);font-size:64px;text-align:center;line-height:1}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="toast" class="toast" hidden></div>
+<div id="stage" hidden></div>
 
 <script>
 "use strict";
@@ -651,14 +675,23 @@ const L = t => t + clockOffset;   // værtens tidsstempel -> lokal tid
 /* ============================================================
    VÆRT: netværk
    ============================================================ */
-function newState(code){
+/* To versioner, der aldrig blandes: Pokaljagt (party-minispil) og Skål! (de klassiske spil) */
+const MODES = {
+  party:  {name:"Pokaljagt", desc:"Party-minispil", cats:["ffa"]},
+  klassik:{name:"Skål!",     desc:"De klassiske drukspil", cats:["klassik"]}
+};
+const modeOf = () => (state && MODES[state.mode]) ? state.mode : "klassik";
+const inMode = t => MODES[modeOf()].cats.includes(TYPES[t].cat || "klassik");
+const modeTypes = () => Object.keys(TYPES).filter(inMode);
+
+function newState(code, mode){
   const enabled = {}; Object.keys(TYPES).forEach(t => enabled[t] = true);
-  return {code, phase:"lobby", hostId:myId, intensity:2, spice:2, maxRounds:40, n:0, round:null, used:{}, seen:{}, count:{}, enabled,
+  return {code, mode: MODES[mode] ? mode : "party", phase:"lobby", hostId:myId, intensity:2, spice:2, maxRounds:40, n:0, round:null, used:{}, seen:{}, count:{}, enabled,
           buddy:null, missions:[], event:null, trial:null, flash:null, fid:0,
           players:[{id:myId,name:me.name,emoji:me.emoji,photo:me.photo,sips:0,wins:0,online:true}]};
 }
 
-function hostGame(resume){
+function hostGame(resume, mode){
   dropWarm();
   teardown();
   role = "host"; clockOffset = 0;
@@ -669,7 +702,8 @@ function hostGame(resume){
   const start = () => {
     peer = new Peer(PREFIX + code.toLowerCase(), {debug:0});
     peer.on("open", () => {
-      if(!state || state.code !== code) state = resume || newState(code);
+      if(!state || state.code !== code) state = resume || newState(code, mode);
+      if(!MODES[state.mode]) state.mode = "klassik";   // gemte spil fra før versionerne var klassiske
       const mine = player(myId);
       if(mine){mine.name=me.name;mine.emoji=me.emoji;mine.photo=me.photo;mine.online=true}
       state.players.forEach(p => { if(p.id!==myId) p.online=false });
@@ -709,7 +743,7 @@ function onGuestData(conn, d){
     const p = player(id);
     if(p){ p.name=name; p.emoji=emoji; p.photo=photo; p.online=true }
     else state.players.push({id,name,emoji,photo,sips:0,wins:0,online:true});
-    commit();
+    commit(); sendRoster();
     return;
   }
   const id = conn._pid; if(!id) return;
@@ -736,9 +770,19 @@ function removePlayer(id){
   commit(); checkAllIn();
 }
 
+/* Det, gæsterne får: uden profilbilleder (sendes for sig i en roster-besked) og uden state.secret (bliver hos værten) */
+function publicState(){
+  const s = {...state, players: state.players.map(({photo, ...p}) => p)};
+  delete s.secret;
+  return s;
+}
 function broadcast(){
-  const msg = {t:"state", s:state, now:Date.now()};
+  const msg = {t:"state", s:publicState(), now:Date.now()};
   guests.forEach(g => { if(g.conn.open) try{ g.conn.send(msg) }catch(e){} });
+}
+function sendRoster(){
+  const photos = {}; state.players.forEach(p => { if(okPhoto(p.photo)) photos[p.id] = p.photo });
+  guests.forEach(g => { if(g.conn.open) try{ g.conn.send({t:"roster", photos}) }catch(e){} });
 }
 function commit(){
   store.set(SAVE_HOST, JSON.stringify({state, at:Date.now()}));
@@ -789,10 +833,14 @@ function pickLeast(key, pool, k){
 const others = (pool, id) => pool.filter(p => p.id !== id);
 
 function pickType(pool){
-  const last = state.round && state.round.type;
+  const last = state.round && state.round.type, lastTag = last && TYPES[last] && TYPES[last].tag;
+  /* samme spil eller samme slags input (mærke) kommer aldrig to gange i træk */
   const opts = Object.entries(TYPES).filter(([t,T]) =>
-    state.enabled[t] !== false && t !== last && pool.length >= T.min && (!T.can || T.can(pool)));
-  if(!opts.length) return "chaos";
+    inMode(t) && state.enabled[t] !== false && t !== last && !(lastTag && T.tag === lastTag) && pool.length >= T.min && (!T.can || T.can(pool)));
+  if(!opts.length){
+    const any = modeTypes().filter(t => state.enabled[t] !== false && pool.length >= TYPES[t].min && t !== last);
+    return any.length ? pick(any) : (modeOf() === "party" ? modeTypes()[0] : "chaos");
+  }
   const total = opts.reduce((a,[,T]) => a + T.w, 0);
   let x = Math.random() * total;
   for(const [t,T] of opts){ if((x -= T.w) <= 0) return t }
@@ -830,12 +878,28 @@ function expireTimers(){
   }
   state.missions = keep;
   if(state.trial && Date.now() >= state.trial.end){ resolveTrial(); changed = true }
+  /* rundens frist ligger i state, så den holder, selv hvis værten genindlæser siden */
+  const r = state.round;
+  if(r && state.phase === "round" && r.until && Date.now() >= r.until){ doReveal(); return false }
   return changed;
 }
 setInterval(() => { if(role === "host" && state && expireTimers()) commit() }, 1000);
 
+/* Slut: bonusstjerner som i et party-brætspil. Hver stjerne giver +1 🏆, før podiet vises */
+function endGame(){
+  const ps = state.players.filter(p => p.wins || p.sips);
+  const top = f => { const max = Math.max(0, ...ps.map(f)); return max > 0 ? ps.filter(p => f(p) === max).map(p => p.id) : [] };
+  state.bonus = [
+    {title:"Minispilstjernen", desc:"flest 🏆 i aftenens spil", ids:top(p => p.wins || 0)},
+    {title:"Uheldsstjernen", desc:"flest tår i løbet af aftenen", ids:top(p => p.sips)}
+  ].filter(b => b.ids.length && modeOf() === "party");   // kun i Pokaljagt; Skål! er som før
+  state.bonus.forEach(b => b.ids.forEach(id => { const p = player(id); if(p) p.wins = (p.wins||0) + 1 }));
+  state.phase = "end"; state.round = null; state.event = null; state.trial = null;
+  commit();
+}
+
 function startRound(){
-  if(state.n >= state.maxRounds){ state.phase = "end"; state.round = null; state.event = null; return commit() }
+  if(state.n >= state.maxRounds) return endGame();
   if(state.event && Date.now() > state.event.end) state.event = null;
   const pool = online();
   const type = pickType(pool);
@@ -843,9 +907,9 @@ function startRound(){
   state.round = r;
   const instant = TYPES[type].start(r, pool);
   if(instant) return applyReveal(r, instant);
+  if(r.limit) r.until = Date.now() + r.limit;
   state.phase = "round";
   commit();
-  if(r.limit){ const n = r.n; setTimeout(() => { if(state && state.round && state.round.n===n && state.phase==="round") doReveal() }, r.limit) }
 }
 
 function hostAct(pid, n, v){
@@ -874,6 +938,12 @@ function doReveal(){
 function applyReveal(r, res){
   res.win = res.win || [];
   res.drink = withMate(res.drink || []);
+  /* De nye spil har et loft: ingen drikker mere end S+1 i ét spil (makkertår medregnet) */
+  if(TYPES[r.type] && TYPES[r.type].cap){
+    const sum = {};
+    res.drink.forEach(d => { sum[d.id] = Math.min(S() + 1, (sum[d.id] || 0) + d.s) });
+    res.drink = Object.entries(sum).map(([id, s]) => ({id, s, mate: res.drink.some(d => d.id === id && d.mate) && !res.drink.some(d => d.id === id && !d.mate)}));
+  }
   res.drink.forEach(d => { const p = player(d.id); if(p) p.sips += d.s });
   res.win.forEach(id => { const p = player(id); if(p) p.wins = (p.wins||0) + 1 });
   if(res.buddy) state.buddy = res.buddy;   // nye makkere gælder først fra næste runde
@@ -935,14 +1005,22 @@ function hostCmd(cmd, arg){
   if(cmd === "skip"){ state.round = null; startRound() }
   if(cmd === "level"){ state.intensity = +arg; commit() }
   if(cmd === "spice"){ state.spice = +arg; commit() }
+  if(cmd === "mode" && MODES[arg] && state.phase === "lobby"){ state.mode = arg; commit() }
   if(cmd === "toggle" && TYPES[arg]){
-    const on = Object.keys(TYPES).filter(t => state.enabled[t] !== false);
+    const on = modeTypes().filter(t => state.enabled[t] !== false);
     if(state.enabled[arg] !== false && on.length <= 1) return toast("Mindst ét spil skal være slået til.");
     state.enabled[arg] = state.enabled[arg] === false; commit();
   }
   if(cmd === "rounds" && ROUND_CHOICES.includes(+arg)){ state.maxRounds = +arg; commit() }
-  if(cmd === "end"){ state.phase = "end"; state.round = null; state.event = null; state.trial = null; commit() }
-  if(cmd === "again"){ state.players.forEach(p => { p.sips = 0; p.wins = 0 }); Object.assign(state, {phase:"lobby", round:null, n:0, used:{}, count:{}, seen:{}, buddy:null, missions:[], event:null, trial:null}); commit() }
+  if(cmd === "end") endGame();
+  if(cmd === "togglecat"){
+    const list = Object.keys(TYPES).filter(t => (TYPES[t].cat || "klassik") === arg);
+    const anyOn = list.some(t => state.enabled[t] !== false);
+    const others = modeTypes().filter(t => !list.includes(t) && state.enabled[t] !== false);
+    if(anyOn && !others.length) return toast("Mindst ét spil skal være slået til.");
+    list.forEach(t => state.enabled[t] = !anyOn); commit();
+  }
+  if(cmd === "again"){ state.players.forEach(p => { p.sips = 0; p.wins = 0 }); Object.assign(state, {phase:"lobby", round:null, n:0, used:{}, count:{}, seen:{}, bonus:null, buddy:null, missions:[], event:null, trial:null}); commit() }
   if(cmd === "kick") removePlayer(arg);
   if(cmd === "hostact") hostAct(myId, state.round && state.round.n, arg);
   ui.menu = false; render();
@@ -953,7 +1031,9 @@ function hostCmd(cmd, arg){
    Hver type: start (vært), act (vært), done, reveal (vært), view og result (alle)
    ============================================================ */
 const nameOf = id => { const p = player(id); return p ? esc(p.name) : "?" };
-const avatar = p => !p ? "" : okPhoto(p.photo) ? `<img class="av" src="${p.photo}" alt="">` : esc(p.emoji);
+let photoCache = {};   // gæst: profilbilleder fra værtens roster-besked
+const photoOf = p => p ? (okPhoto(p.photo) || okPhoto(photoCache[p.id])) : "";
+const avatar = p => !p ? "" : photoOf(p) ? `<img class="av" src="${photoOf(p)}" alt="">` : esc(p.emoji);
 const emojiOf = id => avatar(player(id));
 const who = id => `${emojiOf(id)} ${nameOf(id)}`;
 const chili = l => l >= 2 ? `<span class="chili" aria-label="krydderi ${l}">${"🌶️".repeat(l)}</span>` : "";
@@ -1807,6 +1887,10 @@ function connectHost(){
       if(json === lastJson && !wasOffline) return;   // intet nyt: undgå at gentegne midt i en indtastning
       lastJson = json; state = d.s; render();
     }
+    if(d.t === "roster" && isObj(d.photos)){
+      photoCache = {}; Object.entries(d.photos).forEach(([id, ph]) => { if(okPhoto(ph)) photoCache[id] = ph });
+      if(state) render();
+    }
     if(d.t === "closed"){ store.del(SAVE_LAST); teardown(); role=null; state=null; ui={...ui, screen:"home", err:"Værten har lukket spillet."}; render() }
     if(d.t === "kicked"){ store.del(SAVE_LAST); teardown(); role=null; state=null; ui={...ui, screen:"home", err:"Du blev fjernet fra spillet."}; render() }
   });
@@ -1847,6 +1931,7 @@ function teardown(){
   if(peer) try{ peer.destroy() }catch(e){}
   peer = null; everConnected = false; connecting = false;
   clearMg(); mg = {n:-1};
+  lgClose(); lg = {n:-1};
 }
 
 /* ---- handlinger fra denne telefon ---- */
@@ -1892,6 +1977,727 @@ function beginMg(r){
   buzz(30); render();
 }
 
+/* ============================================================
+   PARTY-MOTOR: minispil i fuld skærm på et lærred (360×640 logiske enheder).
+   Værten sender et frø; alle telefoner bygger samme bane og måler selv deres score.
+   ============================================================ */
+const LG = {};
+const LW = 360, LH = 640;
+const PC = {bg:"#23101B", bg2:"#33172A", line:"#4A2440", foam:"#FFF3E2", amber:"#FFB020", pink:"#FF5C8A", teal:"#3DD6C0", sky:"#6EC1FF", red:"#FF4D3D", green:"#2FD36B", muted:"#C9A9B8", ink:"#23101B", violet:"#A98BFF"};
+const DISPF = "'Bagel Fat One', 'Arial Black', system-ui, sans-serif";
+let lg = {n:-1};
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 } }
+const hashStr = s => { let h = 2166136261; for(const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0 };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+/* tegnehjælpere */
+function rrect(g, x, y, w, h, r){ g.beginPath(); g.moveTo(x+r, y); g.arcTo(x+w, y, x+w, y+h, r); g.arcTo(x+w, y+h, x, y+h, r); g.arcTo(x, y+h, x, y, r); g.arcTo(x, y, x+w, y, r); g.closePath() }
+function txt(g, s, x, y, size, color, align, weight){ g.fillStyle = color; g.font = `${weight || 800} ${size}px Figtree, system-ui, sans-serif`; g.textAlign = align || "center"; g.textBaseline = "middle"; g.fillText(s, x, y) }
+function dtxt(g, s, x, y, size, color){ g.fillStyle = color; g.font = `${size}px ${DISPF}`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(s, x, y) }
+function emo(g, e, x, y, size){ g.font = `${size}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",system-ui,sans-serif`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(e, x, y) }
+function btn(g, x, y, w, h, label, color, on){ rrect(g, x, y, w, h, 18); g.fillStyle = on ? color : PC.bg2; g.fill(); g.lineWidth = 3; g.strokeStyle = color; g.stroke(); txt(g, label, x + w/2, y + h/2, 22, on ? PC.ink : PC.foam) }
+const swipeDir = (a, b, min) => { const dx = b.x - a.x, dy = b.y - a.y; if(Math.hypot(dx, dy) < (min || 40)) return null; return Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : (dy < 0 ? "up" : "down") };
+
+/* Fælles rangregel: sidst drikker S, den nederste fjerdedel drikker 1, nr. 1 får 🏆 og deler S ud */
+function rankOutcome(scores, better){
+  const ids = Object.keys(scores).filter(id => player(id)).sort((a,b) => better === "low" ? scores[a] - scores[b] : scores[b] - scores[a]);
+  const asleep = onlineIds().filter(id => scores[id] === undefined);
+  const places = []; let place = 0, prev = null;
+  ids.forEach((id,i) => { if(scores[id] !== prev){ place = i + 1; prev = scores[id] } places.push({id, place, score:scores[id]}) });
+  const n = ids.length + asleep.length, drink = [];
+  if(n >= 2){
+    const lastPlace = places.length ? places[places.length-1].place : 0;
+    const lastIds = asleep.length ? asleep : places.filter(p => p.place === lastPlace && p.place !== 1).map(p => p.id);
+    lastIds.forEach(id => drink.push({id, s:S()}));
+    const worstFirst = [...asleep, ...[...places].reverse().map(p => p.id)];
+    const k = Math.ceil(n / 4), placeOf = id => { const pl = places.find(p => p.id === id); return pl ? pl.place : Infinity };
+    /* står flere lige på grænsen til den nederste fjerdedel, drikker de alle */
+    const edge = worstFirst[k - 1] !== undefined ? placeOf(worstFirst[k - 1]) : null;
+    worstFirst.forEach((id, i) => {
+      if(i >= k && placeOf(id) !== edge) return;
+      if(!drink.some(d => d.id === id) && placeOf(id) !== 1) drink.push({id, s:1});
+    });
+  }
+  const win = places.filter(p => p.place === 1).map(p => p.id);
+  return {places, asleep, drink, win, give: win.map(id => ({id, s:S()}))};
+}
+
+function lgType(key, def){
+  return {
+    name:def.name, desc:def.desc, w:def.w || 1, min:2, cat:"ffa", tag:def.tag, cap:true,
+    start(r){ r.seed = rnd(2147483647); r.limit = 3500 + def.secs * 1000 + 6000 },
+    act(r, pid, v){
+      if(typeof v !== "number" || !isFinite(v) || r.answers[pid] !== undefined) return false;
+      r.answers[pid] = Math.round(v * 100) / 100; return true;
+    },
+    done: allOnlineAnswered,
+    reveal: r => rankOutcome(r.answers, def.better),
+    view: r => lgView(r, def),
+    result(r, res){
+      return card("teal", def.name, `<h2 class="prompt">${res.win.length ? res.win.map(nameOf).join(" og ") + " vandt!" : "Ingen gennemførte"}</h2>`) +
+        `<div class="label">Resultater</div><div class="result">${[
+          ...res.places.map(p => `<div class="res ${p.place===1?"win":""}"><span class="e">${emojiOf(p.id)}</span><span class="n">${p.place}. ${nameOf(p.id)}</span><span class="v">${esc(def.fmt(p.score))}</span></div>`),
+          ...res.asleep.map(id => `<div class="res"><span class="e">${emojiOf(id)}</span><span class="n">${nameOf(id)}</span><span class="v">Nåede ikke</span></div>`)
+        ].join("")}</div>`;
+    }
+  };
+}
+
+function lgEnsure(r){
+  if(lg.n === r.n) return;
+  lgClose();
+  lg = {n:r.n, type:r.type, phase:"count", start:performance.now() + 3500};
+  if(r.answers[myId] !== undefined){ lg.phase = "done"; lg.score = r.answers[myId]; return }
+  lg.timers = [setTimeout(() => lgBegin(r), 3500), setTimeout(render, 1000), setTimeout(render, 2000), setTimeout(render, 3000)];
+}
+function lgBegin(r){
+  if(lg.n !== r.n || lg.phase !== "count") return;
+  const def = LG[r.type], stage = $("#stage");
+  stage.innerHTML = `<div class="hud"><span class="gt">${esc(def.name)}</span><span class="sc" id="lgsc"></span><span class="tm" id="lgtm"></span></div><canvas id="lgcv"></canvas>`;
+  stage.hidden = false;
+  const cv = $("#lgcv");
+  Object.assign(lg, {cv, g:cv.getContext("2d"), def, phase:"play", t0:performance.now(), last:performance.now(), ended:false, ptrs:{}});
+  lg.api = {
+    common: mulberry32(r.seed >>> 0),                          // samme for alle telefoner
+    rng: mulberry32((r.seed ^ hashStr(myId)) >>> 0),           // kun denne telefon (så man ikke kan skrive af)
+    end: () => { lg.ended = true }, buzz
+  };
+  lg.game = def.create(lg.api);
+  lgResize();
+  const P = e => { const b = cv.getBoundingClientRect(); return {x:(e.clientX - b.left - lg.ox) / lg.scale, y:(e.clientY - b.top - lg.oy) / lg.scale, id:e.pointerId, t:performance.now()} };
+  cv.addEventListener("pointerdown", e => { e.preventDefault(); try{ cv.setPointerCapture(e.pointerId) }catch(_){} const p = P(e); lg.ptrs[e.pointerId] = p; lg.game.down && lg.game.down(p) }, {passive:false});
+  cv.addEventListener("pointermove", e => { if(!lg.ptrs[e.pointerId]) return; e.preventDefault(); const p = P(e); lg.ptrs[e.pointerId] = p; lg.game.move && lg.game.move(p) }, {passive:false});
+  const up = e => { if(!lg.ptrs[e.pointerId]) return; const p = P(e); delete lg.ptrs[e.pointerId]; lg.game.up && lg.game.up(p, e.type === "pointercancel") };
+  cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  buzz(30);
+  requestAnimationFrame(lgFrame);
+}
+function lgResize(){
+  if(!lg.cv) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1), w = lg.cv.clientWidth, h = lg.cv.clientHeight;
+  lg.cv.width = Math.round(w * dpr); lg.cv.height = Math.round(h * dpr);
+  lg.dpr = dpr; lg.scale = Math.min(w / LW, h / LH); lg.ox = (w - LW * lg.scale) / 2; lg.oy = (h - LH * lg.scale) / 2;
+}
+window.addEventListener("resize", () => { if(lg.phase === "play") lgResize() });
+function lgFrame(now){
+  if(lg.phase !== "play") return;
+  const dt = Math.min(0.05, (now - lg.last) / 1000), t = (now - lg.t0) / 1000, def = lg.def, g = lg.g;
+  lg.last = now;
+  try{ lg.game.update && lg.game.update(dt, t) }catch(e){ console.error(e) }
+  g.setTransform(1,0,0,1,0,0); g.fillStyle = "#160A11"; g.fillRect(0, 0, lg.cv.width, lg.cv.height);
+  g.setTransform(lg.dpr * lg.scale, 0, 0, lg.dpr * lg.scale, lg.dpr * lg.ox, lg.dpr * lg.oy);
+  g.save(); g.beginPath(); g.rect(0, 0, LW, LH); g.clip();
+  g.fillStyle = PC.bg; g.fillRect(0, 0, LW, LH);
+  try{ lg.game.draw(g, t) }catch(e){ console.error(e) }
+  g.restore();
+  const tm = $("#lgtm"), sc = $("#lgsc");
+  if(tm) tm.textContent = Math.max(0, Math.ceil(def.secs - t));
+  if(sc) sc.textContent = lg.game.hud ? lg.game.hud() : "";
+  if(t >= def.secs || lg.ended) return setTimeout(lgFinish, lg.ended ? 600 : 0);   // en kort pause, så man ser slutningen
+  requestAnimationFrame(lgFrame);
+}
+function lgFinish(){
+  if(lg.phase !== "play") return;
+  let s = 0; try{ s = lg.game.score() }catch(e){}
+  lg.phase = "done"; lg.score = s; lgCloseStage();
+  act(s); render();
+}
+function lgCloseStage(){ const st = $("#stage"); if(st){ st.hidden = true; st.innerHTML = "" } lg.cv = null }
+function lgClose(){ (lg.timers || []).forEach(clearTimeout); if(lg.phase === "play") lg.phase = "aborted"; lgCloseStage() }
+function lgView(r, def){
+  lgEnsure(r);
+  const prog = progress(onlineIds(), id => r.answers[id] !== undefined);
+  if(lg.phase === "count") return card("teal", def.name, `<h2 class="prompt sm">${esc(def.help)}</h2>`) +
+    `<div class="lgcount">${Math.max(1, Math.ceil((lg.start - performance.now()) / 1000))}</div><p class="hint" style="text-align:center">Spillet åbner i fuld skærm.</p>` + prog;
+  if(lg.phase === "play") return `<p class="waiting">Spillet kører…</p>`;
+  const A = r.answers, fin = Object.keys(A).filter(id => player(id)).sort((a,b) => def.better === "low" ? A[a] - A[b] : A[b] - A[a]);
+  return card("teal", def.name, `<div class="who">Din score</div><h2 class="prompt">${esc(def.fmt(lg.score))}</h2>`) +
+    `<div class="label">Tribunen</div><div class="result">${fin.map((id,i) => `<div class="res ${id===myId?"drink":""}"><span class="e">${emojiOf(id)}</span><span class="n">${i+1}. ${nameOf(id)}</span><span class="v">${esc(def.fmt(A[id]))}</span></div>`).join("")}</div>` +
+    `<p class="hint">Sidst drikker ${tar(S())}, den nederste fjerdedel drikker 1, og nr. 1 får 🏆 og deler ${tar(S())} ud.</p>` + prog;
+}
+
+/* ============================================================
+   DE 13 ALLE-MOD-ALLE-SPIL
+   ============================================================ */
+
+/* 1. Dræsinen: pump skiftevis, brems før svingene */
+LG.pump = {name:"Dræsinen", desc:"Pump frem, brems før svingene", tag:"hamre", secs:35, better:"low",
+  help:"Tryk skiftevis VENSTRE og HØJRE for at pumpe. Før hvert sving skal farten under den røde grænse, ellers afsporer du i 2 sek. Først til 300 m vinder.",
+  fmt: v => v < 100 ? dk(v,1) + " s" : Math.round(300 - (v - 100)) + " m",
+  create(api){
+    const curves = []; let d = 40;
+    while(true){ d += 50 + api.common() * 40; if(d > 285) break; curves.push({at:d, max:8 + Math.floor(api.common() * 4)}) }
+    let dist = 0, speed = 0, lastSide = null, lock = 0, done = null, flash = 0, msg = "", msgT = 0;
+    const next = () => curves.find(c => c.at > dist);
+    const tap = side => {
+      if(lock > 0 || done !== null) return;
+      if(side === lastSide){ speed *= 0.6; flash = 0.3 } else speed = Math.min(26, speed + 1.25);
+      lastSide = side; api.buzz(4);
+    };
+    return {
+      down(p){ if(p.y > 430) tap(p.x < LW/2 ? "L" : "R") },
+      update(dt, t){
+        msgT = Math.max(0, msgT - dt); flash = Math.max(0, flash - dt);
+        if(done !== null) return;
+        if(lock > 0){ lock -= dt; speed = 0; return }
+        speed *= Math.pow(0.55, dt);
+        const prev = dist; dist += speed * dt;
+        for(const c of curves) if(prev < c.at && dist >= c.at){
+          if(speed > c.max){ lock = 2; speed = 0; msg = "AFSPORET!"; msgT = 2; api.buzz(200) } else { msg = "Flot sving!"; msgT = 0.8 }
+        }
+        if(dist >= 300){ dist = 300; done = t; msg = "I MÅL!"; msgT = 3; api.end() }
+      },
+      draw(g){
+        /* fremdrift med sving */
+        rrect(g, 20, 20, 320, 14, 7); g.fillStyle = PC.bg2; g.fill();
+        rrect(g, 20, 20, 320 * dist / 300, 14, 7); g.fillStyle = PC.amber; g.fill();
+        curves.forEach(c => { g.fillStyle = PC.red; g.fillRect(20 + 320 * c.at / 300 - 2, 16, 4, 22) });
+        /* skinner i bevægelse */
+        g.fillStyle = "#3A1E2E"; g.fillRect(0, 150, LW, 110);
+        const off = (dist * 14) % 40;
+        g.fillStyle = "#6B4A3A"; for(let x = -off; x < LW; x += 40) g.fillRect(x, 186, 14, 46);
+        g.fillStyle = "#B8B0A8"; g.fillRect(0, 194, LW, 6); g.fillRect(0, 220, LW, 6);
+        const nc = next();
+        if(nc && nc.at - dist < 25){
+          const x = 120 + (nc.at - dist) * 9;
+          rrect(g, x - 34, 98, 68, 44, 8); g.fillStyle = PC.red; g.fill(); txt(g, "↪ " + nc.max, x, 120, 20, "#fff");
+        }
+        emo(g, "🛒", 110, 190, 56);
+        /* fartmåler */
+        const lim = nc && nc.at - dist < 45 ? nc.max : null;
+        dtxt(g, speed.toFixed(1), 180, 312, 56, lim && speed > lim ? PC.red : PC.foam);
+        txt(g, "fart", 180, 350, 16, PC.muted, "center", 600);
+        rrect(g, 40, 370, 280, 18, 9); g.fillStyle = PC.bg2; g.fill();
+        rrect(g, 40, 370, 280 * Math.min(1, speed / 26), 18, 9); g.fillStyle = lim && speed > lim ? PC.red : PC.teal; g.fill();
+        if(lim){ const lx = 40 + 280 * lim / 26; g.fillStyle = PC.red; g.fillRect(lx - 2, 362, 4, 34); txt(g, "SVING om " + Math.ceil(nc.at - dist) + " m", 180, 410, 16, PC.red) }
+        /* pumpeknapper */
+        btn(g, 16, 440, 158, 170, "VENSTRE", PC.amber, lastSide !== "L");
+        btn(g, 186, 440, 158, 170, "HØJRE", PC.amber, lastSide === "L");
+        if(flash > 0) txt(g, "Skiftevis!", 180, 425, 18, PC.pink);
+        if(msgT > 0) dtxt(g, msg, 180, 268, 40, msg === "AFSPORET!" ? PC.red : PC.amber);
+      },
+      score: () => done !== null ? done : 100 + (300 - dist),
+      hud: () => Math.round(dist) + " / 300 m"
+    };
+  }};
+
+/* 2. Etiketpuslet: drej brikkerne, til etiketten er hel */
+LG.label = {name:"Etiketpuslet", desc:"Drej brikkerne på plads", tag:"tænk", secs:35, better:"low",
+  help:"En øletiket er delt i 3×3 brikker, der er drejet skævt. Tryk på en brik for at dreje den. Bliv hurtigst færdig med to etiketter.",
+  fmt: v => v < 100 ? dk(v,1) + " s" : Math.round(v - 100) + " brikker manglede",
+  create(api){
+    const names = ["PILS","BOCK","IPA","SKÅL","STOUT","CLASSIC"], cols = [PC.amber, PC.pink, PC.teal, PC.sky, PC.violet, PC.green];
+    const labels = [0,1].map(() => {
+      const c = document.createElement("canvas"); c.width = c.height = 540; const x = c.getContext("2d"); x.scale(2,2);
+      const col = cols[Math.floor(api.common() * cols.length)], word = names[Math.floor(api.common() * names.length)];
+      x.fillStyle = PC.foam; x.fillRect(0,0,270,270);
+      x.fillStyle = col; x.beginPath(); x.arc(135,135,118,0,7); x.fill();
+      x.fillStyle = PC.ink; x.beginPath(); x.arc(135,135,96,0,7); x.fill();
+      x.fillStyle = PC.foam; x.font = `48px ${DISPF}`; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(word, 135, 128);
+      x.font = "800 16px Figtree, sans-serif"; x.fillText("ANNO " + (1847 + Math.floor(api.common() * 150)), 135, 170);
+      x.fillStyle = col; x.beginPath(); for(let i=0;i<10;i++){ const a = -Math.PI/2 + i*Math.PI/5, rr = i % 2 ? 9 : 22; x.lineTo(46 + Math.cos(a)*rr, 46 + Math.sin(a)*rr) } x.fill();
+      x.fillStyle = col; x.fillRect(150, 228, 110, 26); x.fillStyle = PC.ink; x.font = "800 13px Figtree, sans-serif"; x.fillText("33 cl · 4,6 %", 205, 241);
+      return c;
+    });
+    const scramble = () => { let r; do { r = Array.from({length:9}, () => Math.floor(api.common() * 4)) } while(r.filter(v => v).length < 6); return r };
+    let li = 0, rot = scramble(), done = null, solvedAt = 0, next = [scramble()];
+    const X0 = 45, Y0 = 150, T = 90;
+    return {
+      down(p){
+        if(done !== null || solvedAt) return;
+        const c = Math.floor((p.x - X0) / T), r = Math.floor((p.y - Y0) / T);
+        if(c < 0 || c > 2 || r < 0 || r > 2) return;
+        rot[r*3 + c] = (rot[r*3 + c] + 1) % 4; api.buzz(5);
+        if(rot.every(v => v === 0)) solvedAt = 0.001;
+      },
+      update(dt, t){
+        if(solvedAt){ solvedAt += dt; if(solvedAt > 0.6){ solvedAt = 0; li++; if(li >= 2){ done = t; api.end() } else rot = next[0] } }
+      },
+      draw(g){
+        txt(g, "Etiket " + Math.min(li + 1, 2) + " af 2", 180, 110, 20, PC.muted);
+        const L = labels[Math.min(li, 1)];
+        for(let i=0;i<9;i++){
+          const c = i % 3, r = Math.floor(i / 3), cx = X0 + c*T + T/2, cy = Y0 + r*T + T/2;
+          g.save(); g.translate(cx, cy); g.rotate(rot[i] * Math.PI / 2);
+          g.drawImage(L, c*180, r*180, 180, 180, -T/2 + 1, -T/2 + 1, T - 2, T - 2); g.restore();
+          if(rot[i]){ g.strokeStyle = "rgba(255,255,255,.12)"; g.lineWidth = 1; g.strokeRect(X0 + c*T + 1, Y0 + r*T + 1, T - 2, T - 2) }
+        }
+        if(solvedAt) dtxt(g, "Klar! 🍺", 180, 470, 40, PC.green);
+        txt(g, "Tryk for at dreje en brik", 180, 520, 18, PC.muted, "center", 600);
+      },
+      score(){ if(done !== null) return done; return 100 + rot.filter(v => v).length + (li < 1 ? 9 : 0) },
+      hud: () => "Etiket " + Math.min(li + 1, 2) + "/2"
+    };
+  }};
+
+/* 3. Buffeten: spis mad, smid alt andet væk */
+LG.buffet = {name:"Buffeten", desc:"Swipe op for at spise", tag:"swipe", secs:25, better:"high",
+  help:"Swipe OP for at spise mad, og swipe til SIDEN for at smide alt andet væk. Spiser du noget forkert, får du ondt i maven i 2 sek.",
+  fmt: v => v + " point",
+  create(api){
+    const FOOD = [["🌭",1],["🍕",2],["🍰",3],["🍔",2],["🌮",1]], JUNK = ["👟","🧼","📺","🧦","🔋","🪴","🧸"];
+    const items = Array.from({length:120}, () => api.common() < 0.6 ? {e:FOOD[Math.floor(api.common() * FOOD.length)], food:true} : {e:[JUNK[Math.floor(api.common() * JUNK.length)], 0], food:false});
+    let i = 0, pts = 0, sick = 0, start = null, anim = null, msg = "", msgT = 0;
+    const go = dir => {
+      if(sick > 0 || anim) return;
+      const it = items[i];
+      if(dir === "up"){ if(it.food){ pts += it.e[1]; msg = "+" + it.e[1]; msgT = 0.5; api.buzz(8) } else { sick = 2; msg = "Av, maven! 🤢"; msgT = 2; api.buzz(150) } }
+      anim = {dir, t:0, e:it.e[0]}; i++;
+    };
+    return {
+      down(p){ start = p },
+      up(p){ if(!start) return; const d = swipeDir(start, p, 40); start = null; if(d === "up") go("up"); else if(d === "left" || d === "right") go(d) },
+      update(dt){ sick = Math.max(0, sick - dt); msgT = Math.max(0, msgT - dt); if(anim){ anim.t += dt; if(anim.t > 0.22) anim = null } },
+      draw(g){
+        txt(g, "↑ SPIS", 180, 70, 22, PC.green);
+        txt(g, "← SMID VÆK →", 180, 560, 20, PC.muted);
+        g.fillStyle = PC.foam; g.beginPath(); g.ellipse(180, 380, 130, 40, 0, 0, 7); g.fill();
+        g.fillStyle = "#E8D8C0"; g.beginPath(); g.ellipse(180, 380, 100, 28, 0, 0, 7); g.fill();
+        if(anim){ const k = anim.t / 0.22, dx = anim.dir === "left" ? -260*k : anim.dir === "right" ? 260*k : 0, dy = anim.dir === "up" ? -260*k : 0; g.globalAlpha = 1 - k; emo(g, anim.e, 180 + dx, 300 + dy, 120); g.globalAlpha = 1 }
+        else if(items[i]) emo(g, items[i].e[0], 180, 300, 120);
+        if(items[i+1]){ g.globalAlpha = .5; emo(g, items[i+1].e[0], 300, 470, 40); g.globalAlpha = 1; txt(g, "næste", 300, 505, 13, PC.muted, "center", 600) }
+        if(sick > 0){ g.fillStyle = "rgba(47,211,107,.18)"; g.fillRect(0,0,LW,LH) }
+        if(msgT > 0) dtxt(g, msg, 180, 180, 34, sick > 0 ? PC.green : PC.amber);
+      },
+      score: () => pts,
+      hud: () => pts + " point"
+    };
+  }};
+
+/* 4. Kassetårnet: stabl ølkasserne, det der stikker ud skæres af */
+LG.stack = {name:"Kassetårnet", desc:"Stabl ølkasser så højt du kan", tag:"timing", secs:30, better:"high",
+  help:"En ølkasse glider frem og tilbage. Tryk for at slippe den på tårnet. Det, der stikker ud, bliver skåret af. Flest kasser vinder.",
+  fmt: v => v + " kasser",
+  create(api){
+    const H = 30;
+    let tower = [{x:80, w:200}], cur = {x:0, w:200, dir:1}, speed = 150, over = false, perfect = 0, cut = null;
+    const drop = () => {
+      if(over) return;
+      const top = tower[tower.length-1];
+      let l = Math.max(cur.x, top.x), r = Math.min(cur.x + cur.w, top.x + top.w);
+      if(Math.abs(cur.x - top.x) < 5){ l = top.x; r = top.x + top.w; perfect = 0.6; api.buzz(20) }
+      if(r - l < 8){ over = true; cut = {x:cur.x, w:cur.w, y:0, vy:0}; api.buzz(200); api.end(); return }
+      cut = cur.x < l ? {x:cur.x, w:l - cur.x, y:0, vy:0} : cur.x + cur.w > r ? {x:r, w:cur.x + cur.w - r, y:0, vy:0} : null;
+      tower.push({x:l, w:r - l}); speed = Math.min(420, speed + 14);
+      cur = {x: cur.dir > 0 ? 0 : LW - (r - l), w:r - l, dir:cur.dir};
+      api.buzz(8);
+    };
+    return {
+      down(){ drop() },
+      update(dt){
+        perfect = Math.max(0, perfect - dt);
+        if(cut){ cut.vy += 900*dt; cut.y += cut.vy*dt; if(cut.y > 700) cut = null }
+        if(over) return;
+        cur.x += cur.dir * speed * dt;
+        if(cur.x < 0){ cur.x = 0; cur.dir = 1 } if(cur.x + cur.w > LW){ cur.x = LW - cur.w; cur.dir = -1 }
+      },
+      draw(g){
+        const n = tower.length, baseY = 600, cam = Math.max(0, n - 12) * H;
+        const box = (x, y, w, c) => { g.fillStyle = c; g.fillRect(x, y, w, H - 2); g.fillStyle = "rgba(0,0,0,.18)"; g.fillRect(x, y + H - 9, w, 7); g.fillStyle = "rgba(255,255,255,.25)"; for(let k = x + 12; k < x + w - 6; k += 22) g.fillRect(k, y + 6, 10, 10) };
+        tower.forEach((b, i) => box(b.x, baseY - i*H + cam, b.w, i % 2 ? PC.amber : "#E89A10"));
+        const curY = baseY - n*H + cam;
+        if(!over) box(cur.x, curY, cur.w, PC.pink);
+        if(cut){ g.globalAlpha = .7; box(cut.x, curY + H + cut.y, cut.w, PC.pink); g.globalAlpha = 1 }
+        if(perfect > 0) dtxt(g, "Perfekt!", 180, 120, 36, PC.green);
+        if(over) dtxt(g, "Væltet!", 180, 200, 44, PC.red);
+        dtxt(g, String(n - 1), 300, 70, 44, PC.foam);
+        txt(g, "Tryk hvor som helst", 120, 70, 16, PC.muted, "center", 600);
+      },
+      score: () => tower.length - 1,
+      hud: () => (tower.length - 1) + " kasser"
+    };
+  }};
+
+/* 5. Tjenerbakken: hold glasset på bakken */
+LG.tray = {name:"Tjenerbakken", desc:"Hold ølglasset på bakken", tag:"træk", secs:30, better:"high",
+  help:"Træk fingeren til siden for at vippe bakken og holde ølglasset på midten, mens bakken bliver skubbet. Glider glasset af, er du ude.",
+  fmt: v => v < 30 ? dk(v,1) + " s" : "Hele tiden · " + Math.round((v - 30) * 100) + " % midt",
+  create(api){
+    const pushes = []; let pt = 1.2; while(pt < 30){ pt += 1.0 + api.common() * 1.6; pushes.push({t:pt, v:(api.common() < .5 ? -1 : 1) * (60 + api.common() * 110 + pt * 4)}) }
+    let x = 0, v = 0, ang = 0, finger = null, out = null, sum = 0, tt = 0, wind = 0, windDir = 1;
+    return {
+      down(p){ finger = p.x }, move(p){ finger = p.x }, up(){ finger = null },
+      update(dt, t){
+        if(out !== null) return;
+        tt = t; wind = Math.max(0, wind - dt);
+        const target = finger === null ? ang * 0.98 : clamp((finger - 180) / 260, -0.45, 0.45);
+        ang += (target - ang) * Math.min(1, dt * 12);
+        for(const p of pushes) if(!p.used && t >= p.t){ p.used = true; v += p.v; wind = 0.6; windDir = Math.sign(p.v) }
+        v += 520 * Math.sin(ang) * dt; v *= Math.pow(0.85, dt); x += v * dt;
+        sum += Math.abs(x) * dt;
+        if(Math.abs(x) > 125){ out = t; api.buzz(250); api.end() }
+      },
+      draw(g){
+        g.save(); g.translate(180, 360); g.rotate(ang);
+        rrect(g, -140, 0, 280, 14, 7); g.fillStyle = "#C9C2B8"; g.fill();
+        g.fillStyle = "rgba(47,211,107,.25)"; g.fillRect(-30, -4, 60, 4);
+        emo(g, out !== null ? "💥" : "🍺", x, -26, 46);
+        g.restore();
+        if(wind > 0) emo(g, windDir > 0 ? "💨" : "💨", windDir > 0 ? 50 : 310, 300, 40);
+        txt(g, "Træk til siden for at vippe", 180, 560, 18, PC.muted, "center", 600);
+        if(out !== null) dtxt(g, "Glasset røg!", 180, 200, 40, PC.red);
+      },
+      score(){ if(out !== null) return out; return 30 + Math.max(0, 1 - (sum / 30) / 125) * 0.99 },
+      hud: () => dk(out !== null ? out : tt, 1) + " s"
+    };
+  }};
+
+/* 6. Ballonpumpen: pump, men bind knude før den springer */
+LG.balloon = {name:"Ballonpumpen", desc:"Pump, men bind knude i tide", tag:"nerve", secs:30, better:"high",
+  help:"Pump ballonen. Jo større, jo flere point. Når den sitrer og viser ⚠, er den tæt på at springe, så tryk BIND KNUDE i tide. Du har tre balloner.",
+  fmt: v => Math.round(v) + " liter",
+  create(api){
+    const th = [0,1,2].map(() => 45 + api.common() * 50);                         // samme tre grænser for alle
+    for(let i = th.length - 1; i > 0; i--){ const j = Math.floor(api.rng() * (i + 1)); [th[i], th[j]] = [th[j], th[i]] }   // men egen rækkefølge
+    const warn = th.map(t => t * 0.8 + (api.rng() - .5) * 6);
+    let k = 0, s = 0, banked = [], pop = 0, done = false;
+    const nextB = () => { k++; s = 0; if(k >= 3){ done = true; api.end() } };
+    return {
+      down(p){
+        if(done || pop > 0 || p.y < 430) return;
+        if(p.x < 220){ s += 3.2; api.buzz(4); if(s >= th[k]){ banked.push(0); pop = 0.8; api.buzz(250) } }
+        else if(s > 0){ banked.push(Math.round(s)); api.buzz(30); nextB() }
+      },
+      update(dt){ if(pop > 0){ pop -= dt; if(pop <= 0) nextB() } },
+      draw(g, t){
+        const warnOn = !done && pop <= 0 && s >= warn[k];
+        const rr = 20 + Math.sqrt(s) * 13, jx = warnOn ? Math.sin(t * 60) * 3 : 0;
+        if(!done){
+          if(pop > 0){ dtxt(g, "BANG!", 180, 240, 56, PC.red) }
+          else {
+            g.fillStyle = [PC.pink, PC.sky, PC.amber][k % 3]; g.beginPath(); g.ellipse(180 + jx, 250, rr, rr * 1.15, 0, 0, 7); g.fill();
+            g.strokeStyle = PC.foam; g.lineWidth = 2; g.beginPath(); g.moveTo(180, 250 + rr * 1.15); g.lineTo(180, 400); g.stroke();
+            if(warnOn) dtxt(g, "⚠", 180, 250, 46, PC.ink);
+            txt(g, Math.round(s) + " liter", 180, 418, 18, PC.foam);
+          }
+        } else dtxt(g, "Færdig!", 180, 250, 44, PC.green);
+        txt(g, "Ballon " + Math.min(k + 1, 3) + " af 3 · " + banked.map(b => b || "💥").join(" + "), 180, 60, 16, PC.muted, "center", 600);
+        btn(g, 16, 440, 196, 170, "PUMP", PC.amber, true);
+        btn(g, 224, 440, 120, 170, "BIND", PC.green, s > 0);
+      },
+      score: () => banked.reduce((a,b) => a + b, 0),
+      hud: () => banked.reduce((a,b) => a + b, 0) + " l"
+    };
+  }};
+
+/* 7. Find fætteren: find den ene, der ligner forbilledet */
+LG.cousin = {name:"Find fætteren", desc:"Find den rigtige i mylderet", tag:"øje", secs:40, better:"low",
+  help:"40 næsten ens fætre myldrer rundt. Find og tryk på den, der ligner forbilledet øverst. Et forkert tryk giver 2 sek straf. Tre omgange på tid.",
+  fmt: v => dk(v,1) + " s",
+  create(api){
+    const R = api.rng, SHIRTS = [PC.pink, PC.sky, PC.teal, PC.violet, PC.amber];
+    const rf = () => ({hat:Math.floor(R()*4), gl:Math.floor(R()*3), mu:Math.floor(R()*2), sh:Math.floor(R()*3)});
+    const same = (a, b) => a.hat === b.hat && a.gl === b.gl && a.mu === b.mu && a.sh === b.sh;
+    let round = 0, target, figs, rStart = 0, total = 0, penalty = 0, flash = 0, done = false;
+    const build = t => {
+      target = rf(); figs = [];
+      for(let i=0;i<40;i++){ let f; do { f = rf() } while(i > 0 && same(f, target)); if(i === 0) f = {...target};
+        figs.push({...f, col:SHIRTS[Math.floor(R()*SHIRTS.length)], x:30 + R()*300, y:150 + R()*450, vx:(R()-.5)*50, vy:(R()-.5)*50, t:i === 0}) }
+      rStart = t;
+    };
+    const drawFig = (g, f, x, y, s) => {
+      g.fillStyle = f.col; g.fillRect(x - 10*s, y + 6*s, 20*s, 16*s);
+      if(f.sh === 1){ g.fillStyle = "rgba(255,255,255,.7)"; for(let k=0;k<3;k++) g.fillRect(x - 10*s, y + (8 + k*5)*s, 20*s, 2*s) }
+      if(f.sh === 2){ g.fillStyle = "rgba(255,255,255,.8)"; [[-5,11],[4,11],[-1,17]].forEach(([a,b]) => { g.beginPath(); g.arc(x + a*s, y + b*s, 1.8*s, 0, 7); g.fill() }) }
+      g.fillStyle = "#F2C9A0"; g.beginPath(); g.arc(x, y, 9*s, 0, 7); g.fill();
+      g.fillStyle = PC.ink;
+      if(f.hat === 1){ g.fillRect(x - 7*s, y - 20*s, 14*s, 12*s); g.fillRect(x - 11*s, y - 9*s, 22*s, 3*s) }
+      if(f.hat === 2){ g.beginPath(); g.arc(x, y - 6*s, 8*s, Math.PI, 0); g.fill(); g.fillRect(x, y - 7*s, 12*s, 3*s) }
+      if(f.hat === 3){ g.fillStyle = "#E8C77A"; g.beginPath(); g.moveTo(x - 8*s, y - 7*s); g.lineTo(x - 8*s, y - 17*s); g.lineTo(x - 3*s, y - 12*s); g.lineTo(x, y - 18*s); g.lineTo(x + 3*s, y - 12*s); g.lineTo(x + 8*s, y - 17*s); g.lineTo(x + 8*s, y - 7*s); g.fill() }
+      g.strokeStyle = PC.ink; g.lineWidth = 1.6*s;
+      if(f.gl === 1){ g.beginPath(); g.arc(x - 4*s, y - 1*s, 3*s, 0, 7); g.moveTo(x + 7*s, y - 1*s); g.arc(x + 4*s, y - 1*s, 3*s, 0, 7); g.stroke() }
+      if(f.gl === 2){ g.strokeRect(x - 7*s, y - 4*s, 6*s, 5*s); g.strokeRect(x + 1*s, y - 4*s, 6*s, 5*s) }
+      if(f.gl === 0){ g.fillStyle = PC.ink; g.fillRect(x - 4.5*s, y - 2*s, 2*s, 2*s); g.fillRect(x + 2.5*s, y - 2*s, 2*s, 2*s) }
+      if(f.mu){ g.fillStyle = "#5A3A22"; g.fillRect(x - 5*s, y + 3*s, 10*s, 2.5*s) }
+    };
+    let now = 0;
+    build(0);
+    return {
+      down(p){
+        if(done) return;
+        let best = null, bd = 30;
+        figs.forEach(f => { const d = Math.hypot(f.x - p.x, f.y + 6 - p.y); if(d < bd){ bd = d; best = f } });
+        if(!best) return;
+        if(best.t){ round++; api.buzz(30); if(round >= 3){ done = true; api.end() } else build(now) }
+        else { penalty += 2; flash = 0.4; api.buzz(120) }
+      },
+      update(dt, t){
+        now = t; flash = Math.max(0, flash - dt);
+        if(done) return;
+        total = t + penalty;
+        if(t - rStart > 15){ round++; if(round >= 3){ done = true; api.end() } else build(t) }   // en omgang varer højst 15 sek
+        figs.forEach(f => { f.x += f.vx*dt; f.y += f.vy*dt; if(f.x < 18 || f.x > 342) f.vx *= -1; if(f.y < 150 || f.y > 610) f.vy *= -1 });
+      },
+      draw(g){
+        rrect(g, 110, 8, 140, 110, 16); g.fillStyle = PC.foam; g.fill();
+        txt(g, "Find mig!", 180, 24, 13, PC.ink);
+        drawFig(g, {...target, col:"#9A8A80"}, 180, 70, 2.2);
+        g.fillStyle = PC.line; g.fillRect(0, 128, LW, 2);
+        figs.forEach(f => drawFig(g, f, f.x, f.y, 1));
+        if(flash > 0){ g.fillStyle = "rgba(255,77,61,.25)"; g.fillRect(0,0,LW,LH); dtxt(g, "+2 sek", 180, 320, 40, PC.red) }
+        txt(g, "Omgang " + Math.min(round + 1, 3) + "/3", 50, 24, 13, PC.muted);
+      },
+      score: () => Math.round(total * 10) / 10,
+      hud: () => dk(total, 1) + " s"
+    };
+  }};
+
+/* 8. Skænkeren: skænk til stregen */
+LG.pour = {name:"Skænkeren", desc:"Skænk fadøl præcis til stregen", tag:"timing", secs:30, better:"low",
+  help:"Hold fingeren nede for at skænke. Træk op for at hælde stejlt (hurtigt, meget skum) og ned for fladt (roligt). Slip, så øl og skum ender på stregen. Fem glas.",
+  fmt: v => v + " point fra stregen",
+  create(api){
+    const targets = [0,1,2,3,4].map(() => 0.55 + api.common() * 0.33);
+    let k = 0, beer = 0, foam = 0, pouring = false, steep = 0.5, y0 = 0, settle = 0, devs = [], done = false;
+    const finishGlass = () => {
+      const top = beer + foam * 0.8, tg = targets[k];
+      const dev = top > 1 ? (1 - tg) + (top - 1) * 2 : Math.abs(top - tg);
+      devs.push(Math.round(dev * 100)); settle = 0.9;
+    };
+    return {
+      down(p){ if(done || settle > 0 || p.y < 380) return; pouring = true; y0 = p.y; steep = 0.5 },
+      move(p){ if(pouring) steep = clamp(0.5 + (y0 - p.y) / 200, 0, 1) },
+      up(){ if(pouring && beer + foam > 0.02){ pouring = false; finishGlass() } else pouring = false },
+      update(dt){
+        if(done) return;
+        if(settle > 0){ settle -= dt; if(settle <= 0){ k++; beer = 0; foam = 0; if(k >= 5){ done = true; api.end() } } return }
+        if(pouring){ beer += (0.10 + 0.30 * steep) * dt; foam += (0.015 + 0.2 * steep * steep) * dt; if(beer + foam > 1.25){ pouring = false; finishGlass() } }
+      },
+      draw(g){
+        const gx = 110, gy = 120, gw = 140, gh = 260, top = beer + foam * (settle > 0 ? 0.8 : 1);
+        g.save(); g.beginPath(); g.moveTo(gx, gy); g.lineTo(gx + gw, gy); g.lineTo(gx + gw - 18, gy + gh); g.lineTo(gx + 18, gy + gh); g.closePath(); g.clip();
+        g.fillStyle = "rgba(255,255,255,.06)"; g.fillRect(gx, gy, gw, gh);
+        const bh = Math.min(1, beer) * gh, fh = Math.min(1, top) * gh - bh;
+        g.fillStyle = PC.amber; g.fillRect(gx, gy + gh - bh, gw, bh);
+        g.fillStyle = PC.foam; g.fillRect(gx, gy + gh - bh - fh, gw, Math.max(0, fh));
+        g.restore();
+        g.strokeStyle = PC.foam; g.lineWidth = 3; g.beginPath(); g.moveTo(gx, gy); g.lineTo(gx + 18, gy + gh); g.lineTo(gx + gw - 18, gy + gh); g.lineTo(gx + gw, gy); g.stroke();
+        if(k < 5){ const ty = gy + gh - targets[k] * gh; g.setLineDash([8,6]); g.strokeStyle = PC.red; g.lineWidth = 3; g.beginPath(); g.moveTo(gx - 20, ty); g.lineTo(gx + gw + 20, ty); g.stroke(); g.setLineDash([]); txt(g, "stregen", gx + gw + 30, ty, 13, PC.red, "left") }
+        if(top > 1){ g.fillStyle = PC.foam; g.beginPath(); g.ellipse(180, gy, 80, 10, 0, 0, 7); g.fill() }
+        txt(g, "Glas " + Math.min(k + 1, 5) + " af 5 · " + devs.join(" · "), 180, 60, 16, PC.muted, "center", 600);
+        rrect(g, 30, 420, 300, 190, 22); g.fillStyle = pouring ? PC.amber : PC.bg2; g.fill(); g.strokeStyle = PC.amber; g.lineWidth = 3; g.stroke();
+        txt(g, pouring ? (steep > .66 ? "STEJLT · skummer" : steep < .33 ? "FLADT · roligt" : "skænker…") : "HOLD FOR AT SKÆNKE", 180, 500, 20, pouring ? PC.ink : PC.foam);
+        txt(g, "↑ stejlt   ·   ↓ fladt", 180, 545, 15, pouring ? PC.ink : PC.muted, "center", 600);
+        if(settle > 0 && devs.length) dtxt(g, devs[devs.length-1] <= 3 ? "Perfekt!" : devs[devs.length-1] + " fra", 180, 95, 30, devs[devs.length-1] <= 3 ? PC.green : PC.amber);
+      },
+      score: () => devs.reduce((a,b) => a + b, 0) + (5 - devs.length) * 100,
+      hud: () => devs.reduce((a,b) => a + b, 0) + " fra"
+    };
+  }};
+
+/* 9. Fingerknuden: hold fingrene på de glidende cirkler */
+LG.fingers = {name:"Fingerknuden", desc:"Hold fingrene på cirklerne", tag:"hold", secs:30, better:"high",
+  help:"Læg telefonen foran dig, væk fra glassene. Hold en finger på hver cirkel, der dukker op. Der kommer op til tre, og de glider rundt. Er en cirkel uden finger i over ½ sek, er du ude.",
+  fmt: v => v >= 30 ? "Hele vejen!" : dk(v,1) + " s",
+  create(api){
+    const C = [0,1,2].map(i => ({born:[0,6,12][i], x:[110,250,180][i], y:[300,300,470][i], ang:api.common()*6.28, sp:0.5 + api.common()*0.4, miss:0}));
+    let out = null, tt = 0;
+    return {
+      update(dt, t){
+        tt = t; if(out !== null) return;
+        const ptrs = Object.values(lg.ptrs);
+        C.forEach((c, i) => {
+          if(t < c.born) return;
+          const sp = (18 + t * 1.6) * c.sp;
+          c.ang += (api.common() - .5) * 0.6 * dt * 10;
+          c.x = clamp(c.x + Math.cos(c.ang) * sp * dt, 60, 300); c.y = clamp(c.y + Math.sin(c.ang) * sp * dt, 120, 580);
+          if(c.x <= 60 || c.x >= 300 || c.y <= 120 || c.y >= 580) c.ang += Math.PI / 2;
+          const armed = t > c.born + 2.2;
+          const held = ptrs.some(p => Math.hypot(p.x - c.x, p.y - c.y) < 52);
+          c.miss = held || !armed ? 0 : c.miss + dt;
+          if(c.miss > 0.5){ out = t; api.buzz(250); api.end() }
+        });
+      },
+      draw(g, t){
+        C.forEach((c, i) => {
+          if(t < c.born - 1) return;
+          const appearing = t < c.born;
+          g.globalAlpha = appearing ? 0.3 : 1;
+          g.fillStyle = [PC.pink, PC.teal, PC.amber][i]; g.beginPath(); g.arc(c.x, c.y, 44, 0, 7); g.fill();
+          g.globalAlpha = 1;
+          if(c.miss > 0){ g.strokeStyle = PC.red; g.lineWidth = 6; g.beginPath(); g.arc(c.x, c.y, 50, -Math.PI/2, -Math.PI/2 + 6.28 * (c.miss / 0.5)); g.stroke() }
+          dtxt(g, String(i + 1), c.x, c.y, 30, PC.ink);
+          if(!appearing && t < c.born + 2.2) txt(g, "Sæt en finger!", c.x, c.y - 62, 15, PC.foam);
+        });
+        if(out !== null) dtxt(g, "Du slap!", 180, 80, 40, PC.red);
+      },
+      score: () => out !== null ? out : 30,
+      hud: () => dk(out !== null ? out : tt, 1) + " s"
+    };
+  }};
+
+/* 10. Sjippetovet: hop over rebet */
+LG.rope = {name:"Sjippetovet", desc:"Hop over rebet i rette øjeblik", tag:"timing", secs:35, better:"high",
+  help:"Tryk for at hoppe, lige før rebet rammer jorden. Rebet bliver hurtigere og snyder med små pauser. Rammer det dig, er du ude.",
+  fmt: v => v + " hop",
+  create(api){
+    const pauses = []; let p = 4; while(p < 35){ p += 2.5 + api.common() * 3; pauses.push(p) }
+    let phi = -Math.PI / 2, air = 0, hops = 0, out = false, slow = 0, pi = 0, started = 1.5;
+    return {
+      down(){ if(!out && air <= 0){ air = 0.5; api.buzz(6) } },
+      update(dt, t){
+        if(out) return;
+        air = Math.max(0, air - dt);
+        if(t < started) return;
+        if(pi < pauses.length && t >= pauses[pi]){ slow = 0.45; pi++ }
+        slow = Math.max(0, slow - dt);
+        const period = Math.max(0.6, 1.35 - t * 0.022);
+        const prev = phi; phi += (2 * Math.PI / period) * dt * (slow > 0 ? 0.3 : 1);
+        const crossed = Math.floor((prev - Math.PI/2) / (2*Math.PI)) !== Math.floor((phi - Math.PI/2) / (2*Math.PI));
+        if(crossed){ if(air > 0.06 && air < 0.46){ hops++ } else { out = true; api.buzz(250); api.end() } }
+      },
+      draw(g){
+        const y0 = 470, jump = air > 0 ? Math.sin((0.5 - air) / 0.5 * Math.PI) * 70 : 0;
+        g.fillStyle = "#3A1E2E"; g.fillRect(0, y0 + 40, LW, 8);
+        emo(g, "🧍", 180, y0 - jump, 80);
+        const ry = 300 + Math.sin(phi) * 210;   // rebets laveste punkt
+        const front = Math.cos(phi) > 0;
+        g.strokeStyle = front ? PC.amber : "rgba(255,176,32,.45)"; g.lineWidth = front ? 6 : 4;
+        g.beginPath(); g.moveTo(30, 300); g.quadraticCurveTo(180, ry * 2 - 300, 330, 300); g.stroke();
+        g.fillStyle = PC.foam; g.fillRect(20, 290, 14, 24); g.fillRect(326, 290, 14, 24);
+        dtxt(g, String(hops), 180, 90, 56, PC.foam);
+        if(slow > 0) txt(g, "…snyd!", 180, 140, 18, PC.pink);
+        if(out) dtxt(g, "Ramt!", 180, 200, 48, PC.red);
+        txt(g, "Tryk hvor som helst for at hoppe", 180, 600, 15, PC.muted, "center", 600);
+      },
+      score: () => hops,
+      hud: () => hops + " hop"
+    };
+  }};
+
+/* 11. Kapselregn: fang kapsler, undgå tordenskyer */
+LG.caps = {name:"Kapselregn", desc:"Fang kapsler, undgå skyer", tag:"træk", secs:25, better:"high",
+  help:"Træk ølkassen til siden og fang kapslerne. En guldkapsel giver 5 point, en almindelig 1. Fanger du en tordensky, er du lammet i 2 sek.",
+  fmt: v => v + " point",
+  create(api){
+    const items = []; let t0 = 0.4;
+    while(t0 < 25){ t0 += 0.28 + api.common() * 0.35; const r = api.common(); items.push({t:t0, x:24 + api.common() * 312, k: r < 0.08 ? "gold" : r < 0.22 ? "cloud" : "cap", vy:170 + api.common() * 90 + t0 * 5, y:-30, live:false, gone:false}) }
+    let bx = 180, pts = 0, stun = 0, msg = "", msgT = 0;
+    return {
+      down(p){ bx = clamp(p.x, 40, 320) }, move(p){ if(stun <= 0) bx = clamp(p.x, 40, 320) },
+      update(dt, t){
+        stun = Math.max(0, stun - dt); msgT = Math.max(0, msgT - dt);
+        items.forEach(it => {
+          if(it.gone) return;
+          if(!it.live){ if(t >= it.t) it.live = true; else return }
+          it.y += it.vy * dt;
+          if(it.y > 560 && it.y < 600 && Math.abs(it.x - bx) < 46){
+            it.gone = true;
+            if(it.k === "cloud"){ stun = 2; msg = "Lammet!"; msgT = 1.5; api.buzz(150) }
+            else { const v = it.k === "gold" ? 5 : 1; pts += v; msg = "+" + v; msgT = 0.4; api.buzz(it.k === "gold" ? 40 : 6) }
+          }
+          if(it.y > 680) it.gone = true;
+        });
+      },
+      draw(g){
+        items.forEach(it => {
+          if(!it.live || it.gone) return;
+          if(it.k === "cloud") emo(g, "⛈️", it.x, it.y, 40);
+          else { g.fillStyle = it.k === "gold" ? PC.amber : "#B9B2AA"; g.beginPath(); for(let i=0;i<21;i++){ const a = i * Math.PI * 2 / 21, r = i % 2 ? 13 : 16; g.lineTo(it.x + Math.cos(a)*r, it.y + Math.sin(a)*r) } g.fill(); if(it.k === "gold") txt(g, "5", it.x, it.y + 1, 13, PC.ink) }
+        });
+        g.globalAlpha = stun > 0 ? 0.4 : 1;
+        rrect(g, bx - 46, 570, 92, 46, 8); g.fillStyle = PC.pink; g.fill(); emo(g, "🍺", bx, 593, 26);
+        g.globalAlpha = 1;
+        if(msgT > 0) dtxt(g, msg, 180, 120, 34, stun > 0 ? PC.red : PC.amber);
+      },
+      score: () => pts,
+      hud: () => pts + " point"
+    };
+  }};
+
+/* 12. Bardiskglid: skub ølkruset tættest på målet */
+LG.slide = {name:"Bardiskglid", desc:"Skub kruset tættest på målet", tag:"sigte", secs:30, better:"low",
+  help:"Swipe ølkruset op ad bardisken, så det stopper tættest på målet, uden at ryge ud over kanten. Du har tre forsøg, og afstandene lægges sammen.",
+  fmt: v => Math.round(v) + " cm fra målet",
+  create(api){
+    const targets = [0,1,2].map(() => 130 + api.common() * 170);
+    let k = 0, my = 560, vy = 0, moving = false, samples = [], dists = [], wait = 0, done = false, fell = false;
+    const stop = () => {
+      moving = false;
+      const d = fell ? 120 : Math.round(Math.abs(my - targets[k]) / 2.5);
+      dists.push(d); wait = 1.1;
+    };
+    return {
+      down(p){ if(!moving && wait <= 0 && !done && Math.hypot(p.x - 180, p.y - my) < 70) samples = [p] },
+      move(p){ if(samples.length) samples.push(p) },
+      up(p){
+        if(!samples.length) return;
+        samples.push(p);
+        const now = p.t, recent = samples.filter(s => now - s.t < 120), a = recent[0] || samples[0];
+        const v = (a.y - p.y) / Math.max(16, now - a.t) * 1000;
+        samples = [];
+        if(v > 80){ vy = Math.min(1700, v); moving = true; fell = false; api.buzz(10) }
+      },
+      update(dt){
+        if(done) return;
+        if(wait > 0){ wait -= dt; if(wait <= 0){ k++; my = 560; fell = false; if(k >= 3){ done = true; api.end() } } return }
+        if(moving){ my -= vy * dt; vy -= 700 * dt; if(my < 40){ fell = true; my = 30; stop() } else if(vy <= 0) stop() }
+      },
+      draw(g){
+        rrect(g, 90, 30, 180, 600, 20); g.fillStyle = "#6B3E26"; g.fill();
+        g.fillStyle = "#7C4A2E"; for(let y = 50; y < 620; y += 46) g.fillRect(96, y, 168, 3);
+        g.fillStyle = PC.red; g.fillRect(90, 28, 180, 6); txt(g, "KANT", 180, 16, 12, PC.red);
+        if(k < 3){ const ty = targets[k]; [36, 24, 12].forEach((r,i) => { g.fillStyle = i % 2 ? PC.foam : PC.red; g.beginPath(); g.arc(180, ty, r, 0, 7); g.fill() }) }
+        emo(g, fell ? "💥" : "🍺", 180, my, 50);
+        txt(g, "Forsøg " + Math.min(k + 1, 3) + "/3 · " + dists.map(d => d + " cm").join(" · "), 180, 625, 13, PC.foam, "center", 600);
+        if(!moving && wait <= 0 && !done) txt(g, "Swipe kruset op ↑", 180, 500, 16, PC.foam);
+        if(wait > 0 && dists.length) dtxt(g, fell ? "Ud over kanten!" : dists[dists.length-1] + " cm", 180, 330, 30, fell ? PC.red : PC.amber);
+      },
+      score: () => dists.reduce((a,b) => a + b, 0) + (3 - dists.length) * 120,
+      hud: () => dists.reduce((a,b) => a + b, 0) + " cm"
+    };
+  }};
+
+/* 13. Flagkaptajnen: gør kun, hvad der står */
+LG.flags = {name:"Flagkaptajnen", desc:"Gør kun det, der står", tag:"reaktion", secs:40, better:"high",
+  help:"Swipe det RØDE flag (venstre side) eller det BLÅ (højre side) op eller ned, som der står. Står der IKKE, så rør ingenting. Du har 3 liv, og tiden bliver kortere.",
+  fmt: v => v + " kommandoer",
+  create(api){
+    const cmds = Array.from({length:60}, (_, i) => ({f:api.common() < .5 ? "R" : "B", d:api.common() < .5 ? "up" : "down", not:i >= 5 && api.common() < .28}));
+    let i = 0, ok = 0, lives = 3, tLeft = 2.4, gap = 0.6, res = "", resT = 0, pos = {R:"down", B:"down"}, start = null, over = false;
+    const win = () => Math.max(1.0, 2.4 - i * 0.07);
+    const next = (good, text) => { if(good) ok++; else { lives--; api.buzz(150) } res = text; resT = 0.6; i++; gap = 0.5; tLeft = win(); if(lives <= 0){ over = true; api.end() } };
+    return {
+      down(p){ start = p },
+      up(p){
+        if(!start || over || gap > 0) { start = null; return }
+        const d = swipeDir(start, p, 35), side = start.x < LW/2 ? "R" : "B"; start = null;
+        if(d !== "up" && d !== "down") return;
+        pos[side] = d;
+        const c = cmds[i];
+        if(c.not) next(false, "Det stod der IKKE!");
+        else next(c.f === side && c.d === d, c.f === side && c.d === d ? "Rigtigt!" : "Forkert!");
+      },
+      update(dt){
+        resT = Math.max(0, resT - dt);
+        if(over) return;
+        if(gap > 0){ gap -= dt; return }
+        tLeft -= dt;
+        if(tLeft <= 0){ const c = cmds[i]; c.not ? next(true, "Godt holdt!") : next(false, "For langsom!") }
+      },
+      draw(g){
+        emo(g, "🧑‍✈️", 180, 210, 90);
+        const flag = (side, x, col) => { const up = pos[side] === "up"; g.strokeStyle = PC.foam; g.lineWidth = 5; g.beginPath(); g.moveTo(x, 270); g.lineTo(x, up ? 150 : 390); g.stroke(); g.fillStyle = col; g.fillRect(x - (side === "R" ? 60 : 0), up ? 150 : 350, 60, 40) };
+        flag("R", 90, PC.red); flag("B", 270, PC.sky);
+        if(gap <= 0 && !over){
+          const c = cmds[i];
+          const text = (c.not ? "IKKE " : "") + (c.f === "R" ? "RØD" : "BLÅ") + (c.d === "up" ? " OP" : " NED");
+          rrect(g, 20, 440, 320, 80, 18); g.fillStyle = c.not ? PC.foam : (c.f === "R" ? PC.red : PC.sky); g.fill();
+          dtxt(g, text, 180, 480, c.not ? 32 : 38, PC.ink);
+          rrect(g, 40, 530, 280, 10, 5); g.fillStyle = PC.bg2; g.fill(); rrect(g, 40, 530, 280 * Math.max(0, tLeft / win()), 10, 5); g.fillStyle = PC.amber; g.fill();
+        }
+        if(resT > 0) dtxt(g, res, 180, 80, 28, /Rigtigt|holdt/.test(res) ? PC.green : PC.red);
+        txt(g, "❤".repeat(Math.max(0, lives)), 300, 30, 20, PC.red);
+        txt(g, "← rød halvdel · blå halvdel →", 180, 600, 14, PC.muted, "center", 600);
+      },
+      score: () => ok,
+      hud: () => ok + " ok"
+    };
+  }};
+
+Object.entries(LG).forEach(([k, def]) => { TYPES[k] = lgType(k, def) });
+/* de ældre minispil får også et mærke, så de ikke kommer lige efter et spil af samme slags */
+TYPES.reflex.tag = "reaktion"; TYPES.tap.tag = "hamre"; TYPES.stop.tag = "timing";
+
 /* ---- Roulette: hjulet tegnes som SVG og drejes ud fra værtens starttid ---- */
 let rouSel = {n:-1};
 const WSTEP = 360 / WHEEL.length;
@@ -1929,7 +2735,7 @@ function hexBoard(r, final){
     const [x,y] = pos[i], id = owner[i], p = id && player(id);
     const fallen = fallAt[i] !== undefined && (final || now >= fallAt[i]);
     const cls = ["hex", id === myId ? "mine" : "", id && id !== myId ? "taken" : "", fallen ? "fallen" : "", f && final && i === f.survivor ? "survivor" : ""].join(" ");
-    const av = !p ? "" : okPhoto(p.photo) ? `<image href="${p.photo}" x="${(x-9).toFixed(1)}" y="${(y-9).toFixed(1)}" width="18" height="18" clip-path="url(#avclip)"/>` : `<text x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}">${esc(p.emoji)}</text>`;
+    const av = !p ? "" : photoOf(p) ? `<image href="${photoOf(p)}" x="${(x-9).toFixed(1)}" y="${(y-9).toFixed(1)}" width="18" height="18" clip-path="url(#avclip)"/>` : `<text x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}">${esc(p.emoji)}</text>`;
     return `<g class="${cls}" data-hex="${i}" ${fallAt[i] !== undefined ? `data-fall="${fallAt[i]}"` : ""}><polygon points="${poly(x,y)}"/>${av}</g>`;
   }).join("");
   return `<svg class="hexboard" viewBox="${vb}" aria-label="Fliser"><defs><clipPath id="avclip" clipPathUnits="objectBoundingBox"><circle cx=".5" cy=".5" r=".5"/></clipPath></defs>${tiles}</svg>`;
@@ -2138,7 +2944,7 @@ function renderHome(){
   <div class="wrap">
     <header class="hero">
       <div class="bubbles" aria-hidden="true">${Array.from({length:12},(_,i)=>`<i style="left:${(i*37)%100}%;animation-delay:${((i*53)%600)/100}s;width:${6+(i%4)*4}px;height:${6+(i%4)*4}px"></i>`).join("")}</div>
-      <h1 class="logo">Skål!<small>Dyst. Tab. Drik.</small></h1>
+      <h1 class="logo">Pokal&shy;jagt<small>Dyst. Tab. Drik.</small></h1>
     </header>
     ${ui.err ? `<p class="err" role="alert">${esc(ui.err)}</p>` : ""}
     <section class="panel">
@@ -2166,7 +2972,8 @@ function renderHome(){
     <section class="panel">
       <div class="label">Eller vær vært</div>
       <p class="hint">Din telefon bliver spillets midtpunkt. De andre scanner din QR-kode eller skriver koden.</p>
-      <button class="btn" data-a="host">Start nyt spil</button>
+      <button class="btn primary" data-a="host" data-v="party">🏆 Start Pokaljagt<small class="btnsub">party-minispil</small></button>
+      <button class="btn" data-a="host" data-v="klassik">🍺 Start klassisk Skål!<small class="btnsub">de klassiske drukspil</small></button>
       ${saved ? `<button class="btn small ghost" data-a="resume">Genoptag spil ${esc(saved.state.code)} (${saved.state.players.length} spillere)</button>` : ""}
     </section>
     <p class="foot">Kun for voksne. Drik med omtanke, og vand tæller også som en tår.</p>
@@ -2175,7 +2982,7 @@ function renderHome(){
 }
 
 function renderConnecting(){
-  app.innerHTML = `<div class="wrap"><header class="hero"><h1 class="logo">Skål!</h1></header>
+  app.innerHTML = `<div class="wrap"><header class="hero"><h1 class="logo">Pokal&shy;jagt</h1></header>
     <section class="panel" style="text-align:center"><div class="drinkhead">${role==="host"?"Åbner spillet…":"Forbinder…"}</div>
     <p class="hint">${esc(ui.status || (role==="host" ? "Henter en spilkode." : "Finder spillet " + ui.code + "."))}</p>
     <button class="btn small ghost" data-a="cancel">Annullér</button></section></div>`;
@@ -2210,6 +3017,8 @@ function banners(){
 }
 
 function renderGame(){
+  /* sprang værten runden over midt i et minispil, lukkes fuldskærmen */
+  if(lg.phase === "play" && (!state.round || state.round.n !== lg.n || state.phase !== "round")) lgClose();
   const mine = player(myId), b = state.buddy;
   const mate = b && (b.a === myId ? b.b : b.b === myId ? b.a : null);
   let body = "";
@@ -2220,7 +3029,7 @@ function renderGame(){
 
   app.innerHTML = `
   <div class="topbar"><div class="topbar-in">
-    <span class="chip"><span class="k">Kode</span>${esc(state.code)}</span>
+    <span class="chip"><span class="k">${modeOf() === "party" ? "🏆" : "🍺"}</span>${esc(state.code)}</span>
     ${mine ? `<span class="chip">🍺 ${mine.sips}</span><span class="chip">🏆 ${mine.wins||0}</span>` : ""}
     ${mate ? `<span class="chip" title="Din drukmakker">🤝 ${nameOf(mate)}</span>` : ""}
     <span class="spacer"></span>
@@ -2250,16 +3059,31 @@ function picker(list, key, cmd, enabled, cls){
 }
 function settings(enabled){
   return `<section class="panel">
-    <div class="label">Tår pr. straf</div>${picker(LEVELS,"intensity","level",enabled)}
-    <div class="label">Krydderi</div>${picker(SPICES,"spice","spice",enabled,"hot")}
-    <div class="label">Antal runder</div>${picker(ROUND_CHOICES.map(v => ({v, t:String(v), s:"runder"})),"maxRounds","rounds",enabled)}
-    ${state.spice > 1 ? `<p class="hint consent">Du kan altid drikke ${tar(S()*2)} i stedet for en udfordring. Udfordringer med andre kræver, at de siger ja.</p>` : ""}
+    <div class="label">Version</div>
+    <div class="seg modes" role="group" style="grid-template-columns:1fr 1fr">${Object.entries(MODES).map(([k,m]) => `<button ${enabled?"":"disabled"} data-a="mode" data-v="${k}" aria-pressed="${modeOf()===k}">${esc(m.name)}<small>${esc(m.desc)}</small></button>`).join("")}</div>
   </section>
   <section class="panel">
-    <div class="eyebrow"><span class="label">Spil i rotationen</span><span class="label">${Object.keys(TYPES).filter(t => state.enabled[t] !== false).length} af ${Object.keys(TYPES).length}</span></div>
-    <div class="toggles">${Object.entries(TYPES).map(([t,T]) => `<button class="tog" data-a="toggle" data-v="${t}" aria-pressed="${state.enabled[t] !== false}" ${enabled?"":"disabled"}>${T.name}<small>${T.desc}${T.min > 2 ? ` · min. ${T.min}` : ""}</small></button>`).join("")}</div>
+    <div class="label">Tår pr. straf</div>${picker(LEVELS,"intensity","level",enabled)}
+    ${modeOf() === "klassik" ? `<div class="label">Krydderi</div>${picker(SPICES,"spice","spice",enabled,"hot")}` : ""}
+    <div class="label">Antal runder</div>${picker(ROUND_CHOICES.map(v => ({v, t:String(v), s:"runder"})),"maxRounds","rounds",enabled)}
+    ${modeOf() === "klassik" && state.spice > 1 ? `<p class="hint consent">Du kan altid drikke ${tar(S()*2)} i stedet for en udfordring. Udfordringer med andre kræver, at de siger ja.</p>` : ""}
+  </section>
+  <section class="panel">
+    <div class="eyebrow"><span class="label">Spil i ${esc(MODES[modeOf()].name)}</span><span class="label">${modeTypes().filter(t => state.enabled[t] !== false).length} af ${modeTypes().length}</span></div>
+    ${CATS.filter(c => MODES[modeOf()].cats.includes(c.k)).map(c => {
+      const list = Object.entries(TYPES).filter(([,T]) => (T.cat || "klassik") === c.k);
+      if(!list.length) return "";
+      const on = list.filter(([t]) => state.enabled[t] !== false).length;
+      return `<div class="catgroup"><div class="eyebrow"><span class="cathead">${c.n} <small>${on}/${list.length}</small></span>
+        ${enabled ? `<button class="btn small ghost catbtn" data-a="togglecat" data-v="${c.k}">${on ? "Slå alle fra" : "Slå alle til"}</button>` : ""}</div>
+        <div class="toggles">${list.map(([t,T]) => `<button class="tog" data-a="toggle" data-v="${t}" aria-pressed="${state.enabled[t] !== false}" ${enabled?"":"disabled"}>${T.name}<small>${T.desc}${T.min > 2 ? ` · min. ${T.min}` : ""}</small></button>`).join("")}</div></div>`;
+    }).join("")}
   </section>`;
 }
+const CATS = [
+  {k:"ffa", n:"Party: alle mod alle"},
+  {k:"klassik", n:"Klassikere"}
+];
 function joinUrl(){ return location.origin + location.pathname + "#" + state.code }
 
 function lobbyView(){
@@ -2275,7 +3099,7 @@ function lobbyView(){
     <div class="bigcode">${esc(state.code)}</div>
     ${canLink ? `<div class="qr" id="qr"></div>
     <div class="row"><button class="btn small" data-a="copy">Kopiér link</button>${navigator.share?`<button class="btn small" data-a="share">Del</button>`:""}</div>` : ""}
-    <p class="hint">Bed de andre åbne Skål! og skrive koden eller scanne QR-koden.</p>
+    <p class="hint">Bed de andre åbne Pokaljagt og skrive koden eller scanne QR-koden.</p>
   </section>
   <section class="panel"><div class="eyebrow"><span class="label">Spillere</span><span class="label">${n}</span></div>${playerTiles(true)}</section>
   ${settings(true)}
@@ -2324,6 +3148,7 @@ function revealView(){
   return `<div class="eyebrow"><span class="t">Runde ${r.n} af ${state.maxRounds} · Resultat</span></div>
     ${T.result(r, res)}
     ${silent ? "" : drinkList(res)}
+    ${res.give && res.give.length && T.cap ? `<div class="label">Må dele tår ud</div><div class="result">${res.give.map(g => `<div class="res win"><span class="e">${emojiOf(g.id)}</span><span class="n">${nameOf(g.id)}${g.id===myId?" (dig)":""}</span><span class="v">deler ${tar(g.s)} ud</span></div>`).join("")}</div>` : ""}
     ${cheatBtn()}
     ${isHost() ? `<div class="stickybottom"><button class="btn primary" data-a="next">${last ? "Se slutresultatet" : "Næste runde"}</button></div>`
       : `<p class="waiting">Venter på, at ${nameOf(state.hostId)} starter næste runde…</p>`}`;
@@ -2341,6 +3166,9 @@ function endView(){
   const pod = (s, i, f) => s[i] ? `<div class="p p${i+1}"><div class="e">${avatar(s[i])}</div><div class="nm">${esc(s[i].name)}</div><div class="s">${f(s[i])}</div></div>` : `<div></div>`;
   const total = state.players.reduce((a,p) => a + p.sips, 0);
   return `<header class="hero" style="padding-top:8px"><h1 class="logo" style="font-size:60px">Tak for i aften!</h1></header>
+    ${state.bonus && state.bonus.length ? `<section class="panel"><div class="label">Bonusstjerner · +1 🏆 hver</div>
+      <div class="bonus">${state.bonus.map((b,i) => `<div class="bstar" style="animation-delay:${i*0.6}s"><div class="bt">⭐ ${esc(b.title)}</div>
+        <div class="bw">${b.ids.map(id => `${emojiOf(id)} ${nameOf(id)}`).join(", ")}</div><small>${esc(b.desc)}</small></div>`).join("")}</div></section>` : ""}
     <section class="panel"><div class="label">Aftenens mester · flest sejre</div>
       <div class="podium">${pod(byWins,1,p=>"🏆"+(p.wins||0))}${pod(byWins,0,p=>"🏆"+(p.wins||0))}${pod(byWins,2,p=>"🏆"+(p.wins||0))}</div></section>
     <section class="panel"><div class="label">Aftenens tørstigste</div>
@@ -2428,7 +3256,7 @@ document.addEventListener("click", e => {
     const go = () => {
       if(isJoin) return joinGame(code);
       if(a === "resume"){ try{ const s = JSON.parse(store.get(SAVE_HOST)); state = s.state; return hostGame(s.state) }catch(err){} }
-      state = null; hostGame();
+      state = null; hostGame(null, v);
     };
     if(typeof Peer === "function") return go();
     /* netværksdelen er ikke hentet endnu: vis ventende skærm og fortsæt, når den er klar */
@@ -2461,7 +3289,7 @@ document.addEventListener("click", e => {
     if(navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast("Link kopieret"), () => toast(url)); else toast(url);
     return;
   }
-  if(a === "share"){ navigator.share({title:"Skål!", text:`Kom med i Skål! Kode: ${state.code}`, url:joinUrl()}).catch(()=>{}); return }
+  if(a === "share"){ navigator.share({title:"Pokaljagt", text:`Kom med i Pokaljagt! Kode: ${state.code}`, url:joinUrl()}).catch(()=>{}); return }
   hostCmd(a, v);
 });
 document.addEventListener("keydown", e => {
